@@ -7,7 +7,11 @@ class Objet : public Carte{
         int gainGold;
         int gainCombat;
     public:
-        
+        Objet(const std::string& nom, int cout,
+            int gainGold, int gainCombat,
+            const SousTypeCarte typeSecondaire=SousTypeCarte::Aucun,
+            const SousTypeCarte typeTertiaire=SousTypeCarte::Aucun);
+
 };
 
 #endif

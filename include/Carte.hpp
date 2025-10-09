@@ -19,9 +19,14 @@ class Carte{
         SousTypeCarte typeSecondaire;
         SousTypeCarte typeTertiaire;
         std::vector<std::unique_ptr<Effet>> effetCarte;
+        std::vector<std::unique_ptr<Effet>> effetFaction;
         bool utilisee;
     public:
-        Carte(const std::string& nom, int cout, const Faction faction);
+        Carte(const std::string& nom, int cout, const Faction faction,
+            std::vector<std::unique_ptr<Effet>>&& effetsCarte,
+            std::vector<std::unique_ptr<Effet>>&& effetsFaction = {},
+            const SousTypeCarte typeSecondaire=SousTypeCarte::Aucun,
+            const SousTypeCarte typeTertiaire=SousTypeCarte::Aucun);
         virtual ~Carte();
         virtual void activer(Player proprietaire, Game& game) = 0;
         void resetUtilisation();
