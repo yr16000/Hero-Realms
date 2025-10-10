@@ -13,10 +13,13 @@ class Game{
         Game();
         void demarrerPartie();
         void tourDeJeu(Player& joueur);
-        void finDePartie();
         void afficherMarche() const;
         Carte* acheterCarte(int index, Player& acheteur);
         void ajouterCarteMarche(std::unique_ptr<Carte> carte);
+        void melangerPioche();
+        void afficherEtatJoueurs() const;
+        bool estTerminee() const;
+        void afficherGagnant() const;
 
 };
 
