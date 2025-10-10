@@ -32,6 +32,8 @@ class Carte{
         void resetUtilisation();
         bool estUtilisee() const;
         std::string getNom() const;
+        SousTypeCarte getTypeSecondaire() const;
+        SousTypeCarte getTypeTertiaire() const;
 };
 
 #endif
