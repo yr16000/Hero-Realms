@@ -7,7 +7,8 @@ class Game{
         Player players[2];
         std::vector<std::unique_ptr<Carte>> marche;
         std::vector<std::unique_ptr<Carte>> pioche;
-        std::vector<std::unique_ptr<Carte>> defausse;
+        std::vector<std::unique_ptr<Carte>> ecartées;
+
     public:
         Game();
         void demarrerPartie();

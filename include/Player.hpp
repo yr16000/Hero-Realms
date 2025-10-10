@@ -12,6 +12,7 @@ class Player{
         int gold=0;
         int heal=0;
         std::vector<std::unique_ptr<Carte>> main;
+        std::vector<std::unique_ptr<Carte>> championsEnJeu;
         std::vector<std::unique_ptr<Carte>> deck;
         std::vector<std::unique_ptr<Carte>> defausse;
     public:
