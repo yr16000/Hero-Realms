@@ -31,6 +31,10 @@ class Player{
         int getHp() const;
         int getGold() const;
         int getAtk() const;
+        std::vector<std::unique_ptr<Carte>>& getDefausse();
+        std::vector<std::unique_ptr<Carte>>& getChampionsEnJeu();
+        std::vector<std::unique_ptr<Carte>>& getMain();
+        std::vector<std::unique_ptr<Carte>>& getDeck();
         void afficherMain() const;
         void afficherStats() const;
 };

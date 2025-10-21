@@ -1,0 +1,56 @@
+raw_text,normalized_key,proposed_class,params,target,notes
+"{Gain 1 combat}",gain_n_combat,EffetGainCombat,"montant=1",player,
+"{Gain 2 combat}",gain_n_combat,EffetGainCombat,"montant=2",player,
+"{Gain 3 combat}",gain_n_combat,EffetGainCombat,"montant=3",player,
+"{Gain 4 combat}",gain_n_combat,EffetGainCombat,"montant=4",player,
+"{Gain 5 combat}",gain_n_combat,EffetGainCombat,"montant=5",player,
+"{Gain 6 combat}",gain_n_combat,EffetGainCombat,"montant=6",player,
+"{Gain 7 combat}",gain_n_combat,EffetGainCombat,"montant=7",player,
+"{Gain 8 combat}",gain_n_combat,EffetGainCombat,"montant=8",player,
+"{Gain 1 gold}",gain_n_gold,EffetGainGold,"montant=1",player,
+"{Gain 2 gold}",gain_n_gold,EffetGainGold,"montant=2",player,
+"{Gain 3 gold}",gain_n_gold,EffetGainGold,"montant=3",player,
+"{Gain 4 gold}",gain_n_gold,EffetGainGold,"montant=4",player,
+"{Gain 6 gold}",gain_n_gold,EffetGainGold,"montant=6",player,
+"{Gain 2 health}",gain_n_health,EffetGainPV,"montant=2",player,
+"{Gain 3 health}",gain_n_health,EffetGainPV,"montant=3",player,
+"{Gain 4 health}",gain_n_health,EffetGainPV,"montant=4",player,
+"{Gain 5 health}",gain_n_health,EffetGainPV,"montant=5",player,
+"{Gain 6 health}",gain_n_health,EffetGainPV,"montant=6",player,
+"Draw a card.",draw_n_cards,EffetPiocherCarte,"nb=1",player,
+"Draw two cards.",draw_n_cards,EffetPiocherCarte,"nb=2",player,
+"You may draw a card. If you do, discard a card.",draw_then_discard,EffetDrawThenDiscard,"nb=1",player,"requires UI choice: draw then discard"
+"You may draw up to two cards, then discard that many cards.",draw_up_to_n_then_discard,EffetDrawThenDiscard,"max=2",player,"interactive: choose number"
+"Stun target champion.",stun_champion,EffetAssomerChampion,,champion,
+"Stun a guard champion.",stun_guard_champion,EffetAssomerChampion,,champion,"target must have guard"
+"Target opponent discards a card.",discard_opponent,EffetDefausserCarteAdversaire,"nb=1",opponent,
+"You may sacrifice a card in your hand or discard pile. If you do, gain an additional {2 combat}.",sacrifice_optional_gain_combat,EffetSacrificeConditionnel,"montant=2",player,"requires logic to check hand/discard and optional sacrifice"
+"{Sacrifice}: {Gain 3 combat}",sacrifice_gain_combat,EffetSacrifice,"montant=3",player,"sacrifice action + immediate gain"
+"{Sacrifice}: {Gain 4 combat}",sacrifice_gain_combat,EffetSacrifice,"montant=4",player,
+"{Sacrifice}: {Gain 5 combat}",sacrifice_gain_combat,EffetSacrifice,"montant=5",player,
+"{Expend}: {Gain 2 combat}",expend_gain_combat,EffetGainCombat,"montant=2",player,"expend = champion ability; handled by Champion::activer"
+"{Expend}: {Gain 3 combat}",expend_gain_combat,EffetGainCombat,"montant=3",player,
+"{Expend}: {Gain 4 combat}",expend_gain_combat,EffetGainCombat,"montant=4",player,
+"{Expend}: {Gain 5 combat}",expend_gain_combat,EffetGainCombat,"montant=5",player,
+"{Expend}: {Gain 6 combat}",expend_gain_combat,EffetGainCombat,"montant=6",player,
+"{Expend}: {Gain 3 combat} or {Gain 4 health}",expend_choice_combat_or_health,EffetChoix,"options=EffetGainCombat(3);EffetGainPV(4)",player,"requires EffetChoix UI"
+"{Expend}: {Gain 3 gold}",expend_gain_gold,EffetGainGold,"montant=3",player
+"Put the next card you acquire this turn on top of your deck.",put_next_acquired_top,EffetTopDeckNextAcquired,,player,
+"Put the next action you acquire this turn on top of your deck.",put_next_action_acquired_top,EffetTopDeckNextAcquired,,player,
+"Put the next card you acquire this turn into your hand.",put_next_acquired_into_hand,EffetNextAcquiredToHand,,player,
+"You may put a card from your discard pile on top of your deck.",put_from_discard_top,EffetTopDeckFromDiscard,,player,"choose card from discard"
+"Take a champion from your discard pile and put it on top of your deck.",take_champion_from_discard_top,EffetTopDeckChampionFromDiscard,,player
+"Prepare a champion.",prepare_champion,EffetPrepareChampion,,player
+"+{1 combat} for each champion you have in play.",gain_per_champion,EffetGainCombatParChampion,,player,"param: per=1"
+"+{1 combat} for each other guard you have in play.",gain_per_guard,EffetGainCombatParChampion,,player,"param: per=1; condition=guard"
+"+{1 health} for each champion you have in play.",gain_health_per_champion,EffetGainPvParChampion,,player
+"{Guild Ally}: Put the next action you acquire this turn on top of your deck.",ally_put_next_action_top,EffetTopDeckNextAcquired,,ally,"ally effects stored in effetFaction"
+"{Guild Ally}: Put the next card you acquire this turn into your hand.",ally_put_next_into_hand,EffetNextAcquiredToHand,,ally
+"{Guild Ally}: Put the next card you acquire this turn on top of your deck.",ally_put_next_top,EffetTopDeckNextAcquired,,ally
+"{Guild Ally}: {Gain 4 combat}",ally_gain_combat,EffetGainCombat,"montant=4",ally
+"{Necros Ally}: Draw a card.",ally_draw,EffetPiocherCarte,"nb=1",ally
+"{Imperial Ally}: {Gain 6 health}",ally_gain_health,EffetGainPV,"montant=6",ally
+"{Wild Ally}: Target opponent discards a card.",ally_discard_opponent,EffetDefausserCarteAdversaire,"nb=1",ally
+"Draw a card. If you do, discard a card.",draw_then_discard_alt,EffetDrawThenDiscard,"nb=1",player
+"Draw a card, then discard a card.",draw_then_discard_alt2,EffetDrawThenDiscard,"nb=1",player
+"Draw a card","draw_simple",EffetPiocherCarte,"nb=1",player
