@@ -11,6 +11,8 @@ class Player{
         int combat=0;
         int gold=0;
         int heal=0;
+        bool nextAcquiredToTopDeck=false;
+        bool nextAcquiredToHand=false;
         std::vector<std::unique_ptr<Carte>> main;
         std::vector<std::unique_ptr<Carte>> championsEnJeu;
         std::vector<std::unique_ptr<Carte>> deck;
@@ -31,6 +33,10 @@ class Player{
         int getHp() const;
         int getGold() const;
         int getAtk() const;
+        bool getNextAcquiredToTopDeck() const;
+        void setNextAcquiredToTopDeck(bool val);
+        bool getNextAcquiredToHand() const;
+        void setNextAcquiredToHand(bool val);
         std::vector<std::unique_ptr<Carte>>& getDefausse();
         std::vector<std::unique_ptr<Carte>>& getChampionsEnJeu();
         std::vector<std::unique_ptr<Carte>>& getMain();
