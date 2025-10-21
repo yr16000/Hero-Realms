@@ -1,7 +1,11 @@
 #include "../../include/effets/EffetGainCombatParChampion.hpp"
+#include <iostream>
 
 EffetGainCombatParChampion::EffetGainCombatParChampion(int montantParChampion): Effet("Gain combat par champion"), montantParChampion(montantParChampion){}
 
 void EffetGainCombatParChampion::activerEffet(Player& proprietaire, Game& game){
-    // stub: calculer nb champions et ajouter combat
+    int nbChampions=proprietaire.getChampionsEnJeu().size();
+    int combatGagne=nbChampions * montantParChampion;
+    proprietaire.modiffCombat(combatGagne);
+    std::cout<<combatGagne<<" de combat gagnés\n";
 }

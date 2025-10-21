@@ -30,6 +30,7 @@ class Player{
         void jouerCarte(int index, Game& game);
         void sacrifierCarte(Carte* carte);
         bool estVivant() const;
+        int getId() const;
         int getHp() const;
         int getGold() const;
         int getAtk() const;

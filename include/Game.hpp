@@ -11,6 +11,7 @@ class Game{
 
     public:
         Game();
+        std::vector<Player>& getPlayers();
         void demarrerPartie();
         void tourDeJeu(Player& joueur);
         void afficherMarche() const;
