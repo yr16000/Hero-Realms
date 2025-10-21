@@ -6,7 +6,9 @@
 #include "../../include/Game.hpp"
 #include "../../include/Champion.hpp"
 
-EffetAssomerChampion::EffetAssomerChampion() : Effet("Assomer champion") {}
+EffetAssomerChampion::EffetAssomerChampion()
+    : Effet("Assomer le champion") {}
+
 
 void EffetAssomerChampion::activerEffet(Player& proprietaire, Game& game){
     Player* adversaire = nullptr;
