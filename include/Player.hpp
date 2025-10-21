@@ -7,8 +7,8 @@
 class Player{
     private:
         int id;
-        int hp=50;
-        int atk=0;
+        int pv=50;
+        int combat=0;
         int gold=0;
         int heal=0;
         std::vector<std::unique_ptr<Carte>> main;
