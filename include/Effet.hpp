@@ -8,8 +8,10 @@ class Effet{
     private:
         std::string description;
     public:
-        virtual void activerEffet(Player& proprietaire,Game& game)=0;
-        std::string getDescription();
+        Effet(const std::string& desc);
+        virtual ~Effet();
+        virtual void activerEffet(Player& proprietaire, Game& game)=0;
+        std::string getDescription() const;
 };
 
 #endif
