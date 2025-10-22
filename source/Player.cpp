@@ -99,7 +99,7 @@ void Player::jouerCarte(int index, Game& game){
 			break;
 		case TypeCarte::Objet:
 			// put into play (treat like champion for now)
-			championsEnJeu.push_back(std::move(c));
+			defausse.push_back(std::move(c));
 			break;
 		default:
 			defausse.push_back(std::move(c));
@@ -148,7 +148,7 @@ bool Player::getNextAcquiredActionToTopDeck() const { return this->nextAcquiredA
 void Player::setNextAcquiredActionToTopDeck(bool val) { this->nextAcquiredActionToTopDeck = val; }
 
 std::vector<std::unique_ptr<Carte>>& Player::getDefausse(){ return defausse; }
-std::vector<std::unique_ptr<Carte>>& Player::getChampionsEnJeu(){ return championsEnJeu; }
+std::vector<std::unique_ptr<Champion>>& Player::getChampionsEnJeu(){ return championsEnJeu; }
 std::vector<std::unique_ptr<Carte>>& Player::getMain(){ return main; }
 std::vector<std::unique_ptr<Carte>>& Player::getDeck(){ return deck; }
 

@@ -18,7 +18,6 @@
 #include "EffetNextAcquiredToHand.hpp"
 #include "EffetOptionnel.hpp"
 #include "EffetPiocherCarte.hpp"
-#include "EffetSacrifice.hpp"
 #include "EffetTopDeckFromDiscard.hpp"
 #include "EffetTopDeckNextAcquired.hpp"
 
