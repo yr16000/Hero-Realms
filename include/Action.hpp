@@ -15,7 +15,7 @@ class Action : public Carte{
             const SousTypeCarte typeSecondaire=SousTypeCarte::Aucun,
             const SousTypeCarte typeTertiaire=SousTypeCarte::Aucun);
         ~Action();
-        void activer(Player proprietaire, Game& game) override;
+        void activer(Player& proprietaire, Game& game) override;
         void sacrifier(Player& proprietaire, Game& game);
 
 };

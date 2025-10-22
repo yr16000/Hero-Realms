@@ -2,6 +2,8 @@
 #define EFFETNEXTACQUIREDTOHAND_HPP
 
 #include "../Effet.hpp"
+#include "../Player.hpp"
+#include "../Game.hpp"
 
 class EffetNextAcquiredToHand : public Effet{
     public:

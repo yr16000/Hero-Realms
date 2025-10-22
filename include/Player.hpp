@@ -3,6 +3,7 @@
 #include <vector>
 #include <memory>
 #include "Carte.hpp"
+#include "Champion.hpp"
 
 class Player{
     private:
@@ -13,6 +14,7 @@ class Player{
         int heal=0;
         bool nextAcquiredToTopDeck=false;
         bool nextAcquiredToHand=false;
+        bool nextAcquiredActionToTopDeck=false;
         std::vector<std::unique_ptr<Carte>> main;
         std::vector<std::unique_ptr<Carte>> championsEnJeu;
         std::vector<std::unique_ptr<Carte>> deck;
@@ -38,11 +40,14 @@ class Player{
         void setNextAcquiredToTopDeck(bool val);
         bool getNextAcquiredToHand() const;
         void setNextAcquiredToHand(bool val);
+        bool getNextAcquiredActionToTopDeck() const;
+        void setNextAcquiredActionToTopDeck(bool val);
         std::vector<std::unique_ptr<Carte>>& getDefausse();
-        std::vector<std::unique_ptr<Carte>>& getChampionsEnJeu();
+        std::vector<std::unique_ptr<Champion>>& getChampionsEnJeu();
         std::vector<std::unique_ptr<Carte>>& getMain();
         std::vector<std::unique_ptr<Carte>>& getDeck();
         void afficherMain() const;
+        void afficherChampionsEnJeu() const;
         void afficherStats() const;
 };
 

@@ -1,7 +1,12 @@
 #ifndef EFFET_HPP
 #define EFFET_HPP
+#include <string>
+#include <memory>
 #include "Player.hpp"
 #include "Game.hpp"
+
+class Player;
+class Game;
 #include <string>
 
 class Effet{

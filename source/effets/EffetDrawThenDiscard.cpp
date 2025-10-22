@@ -1,4 +1,5 @@
 #include "../../include/effets/EffetDrawThenDiscard.hpp"
+#include "../../include/Player.hpp"
 #include <iostream>
 
 EffetDrawThenDiscard::EffetDrawThenDiscard(int nb): Effet("Draw then discard"), nb(nb){}

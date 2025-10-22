@@ -1,4 +1,5 @@
 #include "../../include/effets/EffetGainPV.hpp"
+#include "../../include/Player.hpp"
 
 EffetGainPV::EffetGainPV(int montant) : Effet("Gain de PV"), montant(montant) {}
 

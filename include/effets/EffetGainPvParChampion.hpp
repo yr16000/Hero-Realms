@@ -2,6 +2,8 @@
 #define EFFETGAINPVPARCHAMPION_HPP
 
 #include "../Effet.hpp"
+#include "../Player.hpp"
+#include "../Game.hpp"
 
 class EffetGainPvParChampion : public Effet{
     private:

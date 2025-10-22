@@ -1,4 +1,6 @@
 #include "../../include/effets/EffetDefausserCarteAdversaire.hpp"
+#include "../../include/Player.hpp"
+#include "../../include/Game.hpp"
 #include <iostream>
 
 EffetDefausserCarteAdversaire::EffetDefausserCarteAdversaire(int nb): Effet("Defausser adversaire"), nb(nb){}

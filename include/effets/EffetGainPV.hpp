@@ -1,6 +1,8 @@
 #ifndef EFFETGAINPV_HPP
 #define EFFETGAINPV_HPP
 #include "../Effet.hpp"
+#include "../Player.hpp"
+#include "../Game.hpp"
 
 class EffetGainPV : public Effet{
 	private:

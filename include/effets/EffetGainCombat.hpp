@@ -1,6 +1,8 @@
 #ifndef EFFETGAINGCOMBAT_HPP
 #define EFFETGAINGCOMBAT_HPP
 #include "../Effet.hpp"
+#include "../Player.hpp"
+#include "../Game.hpp"
 
 class EffetGainCombat : public Effet{
     private:

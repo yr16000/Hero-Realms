@@ -1,4 +1,5 @@
 #include "../../include/effets/EffetGainGold.hpp"
+#include "../../include/Player.hpp"
 
 EffetGainGold::EffetGainGold(int montant) : Effet("Gain d'or"), montant(montant) {}
 
