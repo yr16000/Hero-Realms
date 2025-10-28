@@ -24,7 +24,23 @@ SousTypeCarte Carte::getTypeTertiaire() const { return typeTertiaire; }
 TypeCarte Carte::getType() const { return typePrimaire; }
 
 void Carte::afficherCarte() const {
-	std::cout << "Carte: " << nom << " Cout: " << cout << "\n";
+	std::cout << "Nom: " << nom << " | Cout: " << cout << " | Faction: " << to_string(faction) << "\n";
+	if(!effetCarte.empty()){
+		std::cout << " Effets: \n";
+		for(const auto &e : effetCarte){
+			if(e) std::cout << "  - " << e->getDescription() << "\n";
+		}
+	}
+	if(!effetFaction.empty()){
+		std::cout << " Effets de faction: \n";
+		for(const auto &e : effetFaction){
+			if(e) std::cout << "  - " << e->getDescription() << "\n";
+		}
+	}
+}
+
+void Carte::onSacrifice(Player& /*proprietaire*/, Game& /*game*/) {
+	// default: nothing
 }
 
 Faction Carte::getFaction() const {

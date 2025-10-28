@@ -3,7 +3,10 @@
 #include <vector>
 #include <memory>
 #include "Carte.hpp"
+#include <iostream>
 #include "Champion.hpp"
+
+class Game;
 
 class Player{
     private:
@@ -19,6 +22,7 @@ class Player{
         std::vector<std::unique_ptr<Carte>> championsEnJeu;
         std::vector<std::unique_ptr<Carte>> deck;
         std::vector<std::unique_ptr<Carte>> defausse;
+        std::vector<std::unique_ptr<Carte>> sacrifices;
     public:
         Player(int id);
         void piocherCarte(int nb);
@@ -30,7 +34,7 @@ class Player{
         void attaquer(Player& cible, int nb,Carte* carte=nullptr);
         void subirDegat(int nb);
         void jouerCarte(int index, Game& game);
-        void sacrifierCarte(Carte* carte);
+        void sacrifierCarte(Carte* carte, Game& game);
         bool estVivant() const;
         int getId() const;
         int getHp() const;
@@ -43,11 +47,12 @@ class Player{
         bool getNextAcquiredActionToTopDeck() const;
         void setNextAcquiredActionToTopDeck(bool val);
         std::vector<std::unique_ptr<Carte>>& getDefausse();
-        std::vector<std::unique_ptr<Champion>>& getChampionsEnJeu();
+        std::vector<std::unique_ptr<Carte>>& getChampionsEnJeu();
         std::vector<std::unique_ptr<Carte>>& getMain();
         std::vector<std::unique_ptr<Carte>>& getDeck();
         void afficherMain() const;
         void afficherChampionsEnJeu() const;
+        void afficherDefausse() const;
         void afficherStats() const;
 };
 

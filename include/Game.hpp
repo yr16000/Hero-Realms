@@ -1,13 +1,15 @@
 #ifndef GAME_HPP
 #define GAME_HPP
 #include "Player.hpp"
+#include <vector>
+#include <memory>
 
 class Game{
     private:
-        Player players[2];
+        std::vector<Player> players;
         std::vector<std::unique_ptr<Carte>> marche;
         std::vector<std::unique_ptr<Carte>> pioche;
-        std::vector<std::unique_ptr<Carte>> ecartées;
+        std::vector<std::unique_ptr<Carte>> ecartees;
 
     public:
         Game();

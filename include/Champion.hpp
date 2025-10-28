@@ -15,14 +15,11 @@ class Champion : public Carte{
             const SousTypeCarte typeSecondaire=SousTypeCarte::Aucun,
             const SousTypeCarte typeTertiaire=SousTypeCarte::Aucun);
         void activer(Player& proprietaire, Game& game) override;
+        void onSacrifice(Player& proprietaire, Game& game) override;
         void subirDegat(int nb);
         bool getEstGarde();
-        bool getEstActiver() { 
-            return estActiver; 
-        }
-        void setEstActiver(bool val) {
-            estActiver = val;
-        }
+        bool getEstActiver();
+        void setEstActiver(bool val);
 
 };
 

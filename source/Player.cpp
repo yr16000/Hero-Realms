@@ -3,17 +3,22 @@
 #include "../include/Game.hpp"
 #include <iostream>
 #include <algorithm>
+#include <random>
 
 Player::Player(int id) : id(id) {}
+
 
 // Draw nb cards from deck to hand, reshuffle defausse into deck if needed
 void Player::piocherCarte(int nb){
 	for(int i=0;i<nb;i++){
 		if(deck.empty()){
 			if(!defausse.empty()){
+				// move all cards from defausse to deck
 				for(auto &c : defausse) deck.push_back(std::move(c));
 				defausse.clear();
-				std::reverse(deck.begin(), deck.end());
+				// shuffle deck
+				static std::mt19937 rng((std::random_device())());
+				std::shuffle(deck.begin(), deck.end(), rng);
 			}
 		}
 		if(deck.empty()){
@@ -107,11 +112,14 @@ void Player::jouerCarte(int index, Game& game){
 	}
 }
 
-void Player::sacrifierCarte(Carte* carte){
+void Player::sacrifierCarte(Carte* carte, Game& game){
+	if(!carte) return;
+	// Call card-specific sacrifice behavior
+	carte->onSacrifice(*this, game);
 	// find in championsEnJeu
 	for(size_t i=0;i<championsEnJeu.size();++i){
 		if(championsEnJeu[i].get() == carte){
-			defausse.push_back(std::move(championsEnJeu[i]));
+			sacrifices.push_back(std::move(championsEnJeu[i]));
 			championsEnJeu.erase(championsEnJeu.begin()+i);
 			return;
 		}
@@ -119,8 +127,16 @@ void Player::sacrifierCarte(Carte* carte){
 	// find in main
 	for(size_t i=0;i<main.size();++i){
 		if(main[i].get() == carte){
-			defausse.push_back(std::move(main[i]));
+			sacrifices.push_back(std::move(main[i]));
 			main.erase(main.begin()+i);
+			return;
+		}
+	}
+	// find in defausse
+	for(size_t i=0;i<defausse.size();++i){
+		if(defausse[i].get() == carte){
+			sacrifices.push_back(std::move(defausse[i]));
+			defausse.erase(defausse.begin()+i);
 			return;
 		}
 	}
@@ -148,7 +164,7 @@ bool Player::getNextAcquiredActionToTopDeck() const { return this->nextAcquiredA
 void Player::setNextAcquiredActionToTopDeck(bool val) { this->nextAcquiredActionToTopDeck = val; }
 
 std::vector<std::unique_ptr<Carte>>& Player::getDefausse(){ return defausse; }
-std::vector<std::unique_ptr<Champion>>& Player::getChampionsEnJeu(){ return championsEnJeu; }
+std::vector<std::unique_ptr<Carte>>& Player::getChampionsEnJeu(){ return championsEnJeu; }
 std::vector<std::unique_ptr<Carte>>& Player::getMain(){ return main; }
 std::vector<std::unique_ptr<Carte>>& Player::getDeck(){ return deck; }
 

@@ -6,17 +6,18 @@
 
 class Action : public Carte{
     private:
-        std::vector<std::unique_ptr<Effet>> sacrifice;
+        std::vector<std::unique_ptr<Effet>> effetSacrifice;
     public:
         Action(const std::string& nom, int cout, const Faction faction,
-            bool sacrifice,
+            bool sacrificeFlag,
             std::vector<std::unique_ptr<Effet>>&& effetsCarte,
             std::vector<std::unique_ptr<Effet>>&& effetsFaction = {},
+            std::vector<std::unique_ptr<Effet>>&& effetsSacrifice = {},
             const SousTypeCarte typeSecondaire=SousTypeCarte::Aucun,
             const SousTypeCarte typeTertiaire=SousTypeCarte::Aucun);
         ~Action();
         void activer(Player& proprietaire, Game& game) override;
-        void sacrifier(Player& proprietaire, Game& game);
+        void onSacrifice(Player& proprietaire, Game& game) override;
 
 };
 

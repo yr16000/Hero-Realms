@@ -30,6 +30,7 @@ class Carte{
             const SousTypeCarte typeTertiaire=SousTypeCarte::Aucun);
         virtual ~Carte();
         virtual void activer(Player& proprietaire, Game& game) = 0;
+        virtual void onSacrifice(Player& proprietaire, Game& game);
         void resetUtilisation();
         bool estUtilisee() const;
         std::string getNom() const;
