@@ -18,3 +18,7 @@ void EffetGainCombatParGarde::activerEffet(Player& proprietaire, Game& game){
     proprietaire.modiffCombat(combatGagne);
     std::cout<<combatGagne<<" de combat gagnés\n";
 }
+
+std::string EffetGainCombatParGarde::toString() const {
+    return std::string("Gain de ") + std::to_string(montantParGarde) + " combat par garde";
+}

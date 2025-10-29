@@ -61,3 +61,7 @@ void EffetAssomerChampion::activerEffet(Player& proprietaire, Game& game){
     std::cout<< "Carte assomée.\n";
     
 }
+
+std::string EffetAssomerChampion::toString() const {
+    return std::string("Assommer un champion adverse (ciblez un champion)");
+}

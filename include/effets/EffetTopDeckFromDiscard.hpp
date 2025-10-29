@@ -7,6 +7,7 @@ class EffetTopDeckFromDiscard : public Effet{
     public:
         EffetTopDeckFromDiscard();
         void activerEffet(Player& proprietaire, Game& game) override;
+        std::string toString() const override;
 };
 
 #endif

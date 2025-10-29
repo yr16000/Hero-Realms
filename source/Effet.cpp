@@ -2,5 +2,4 @@
 
 Effet::Effet(const std::string& desc) : description(desc) {}
 Effet::~Effet() = default;
-
-std::string Effet::getDescription() const { return description; }
+std::string Effet::toString() const { return description; }

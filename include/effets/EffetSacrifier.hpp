@@ -10,6 +10,7 @@ private:
 public:
     EffetSacrifier(int n, std::unique_ptr<Effet>&& effetSiSacrifie = nullptr);
     void activerEffet(Player& proprietaire, Game& game) override;
+    std::string toString() const override;
 };
 
 #endif

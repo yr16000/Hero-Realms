@@ -10,6 +10,7 @@ class EffetGainCombat : public Effet{
     public:
         EffetGainCombat(int montant);
         void activerEffet(Player& proprietaire, Game& game) override;
+        std::string toString() const override;
 };
 
 #endif

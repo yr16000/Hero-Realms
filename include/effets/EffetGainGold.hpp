@@ -10,6 +10,7 @@ class EffetGainGold : public Effet{
     public:
         EffetGainGold(int montant);
         void activerEffet(Player& proprietaire, Game& game) override;
+        std::string toString() const override;
 };
 
 #endif

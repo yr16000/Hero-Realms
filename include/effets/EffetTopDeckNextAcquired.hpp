@@ -7,6 +7,7 @@ class EffetTopDeckNextAcquired : public Effet{
     public:
         EffetTopDeckNextAcquired();
         void activerEffet(Player& proprietaire, Game& game) override;
+        std::string toString() const override;
 };
 
 #endif

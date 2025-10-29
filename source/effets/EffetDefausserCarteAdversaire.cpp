@@ -36,3 +36,7 @@ void EffetDefausserCarteAdversaire::activerEffet(Player& proprietaire, Game& gam
         std::cout<< "Carte defaussee.\n";
     }
 }
+
+std::string EffetDefausserCarteAdversaire::toString() const {
+    return std::string("Forcer l'adversaire à défausser ") + std::to_string(nb) + (nb > 1 ? " cartes" : " carte");
+}

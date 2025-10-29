@@ -11,6 +11,7 @@ private:
 public:
     EffetChoix(std::vector<std::unique_ptr<Effet>>&& opts);
     void activerEffet(Player& proprietaire, Game& game) override;
+    std::string toString() const override;
 };
 
 #endif

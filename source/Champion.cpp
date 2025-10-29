@@ -1,4 +1,6 @@
 #include "../include/Champion.hpp"
+#include "../include/Player.hpp"
+#include "../include/Game.hpp"
 #include <iostream>
 
 Champion::Champion(const std::string& nom, int cout, const Faction faction,

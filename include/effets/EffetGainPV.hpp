@@ -10,6 +10,7 @@ class EffetGainPV : public Effet{
 	public:
 		EffetGainPV(int montant);
 		void activerEffet(Player& proprietaire, Game& game) override;
+		std::string toString() const override;
 };
 
 #endif

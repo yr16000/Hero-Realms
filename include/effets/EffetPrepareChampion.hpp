@@ -8,6 +8,7 @@ class EffetPrepareChampion : public Effet{
     public:
         EffetPrepareChampion();
         void activerEffet(Player& proprietaire, Game& game) override;
+        std::string toString() const override;
 };
 
 #endif

@@ -5,6 +5,8 @@
 #include <algorithm>
 #include <random>
 
+static std::mt19937 rng((std::random_device())());
+
 Player::Player(int id) : id(id) {}
 
 
@@ -16,9 +18,7 @@ void Player::piocherCarte(int nb){
 				// move all cards from defausse to deck
 				for(auto &c : defausse) deck.push_back(std::move(c));
 				defausse.clear();
-				// shuffle deck
-				static std::mt19937 rng((std::random_device())());
-				std::shuffle(deck.begin(), deck.end(), rng);
+				melangerDeck();
 			}
 		}
 		if(deck.empty()){
@@ -29,6 +29,12 @@ void Player::piocherCarte(int nb){
 		deck.pop_back();
 	}
 }
+
+void Player::melangerDeck(){
+	if(deck.empty()) return;
+	std::shuffle(deck.begin(), deck.end(), rng);
+}
+
 
 void Player::acheterCarte(int index, Game& game){
 	// Ask the game to perform the purchase. Game::acheterCarte is responsible

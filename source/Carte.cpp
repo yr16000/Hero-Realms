@@ -1,5 +1,6 @@
 #include "../include/Carte.hpp"
 #include <iostream>
+#include "../include/ui/CardRenderer.hpp"
 
 Carte::Carte(const std::string& nom, int cout, const Faction faction, TypeCarte typePrimaire,
 	std::vector<std::unique_ptr<Effet>>&& effetsCarte,
@@ -17,6 +18,12 @@ bool Carte::estUtilisee() const { return utilisee; }
 
 std::string Carte::getNom() const { return nom; }
 
+int Carte::getCout() const { return cout; }
+
+const std::vector<std::unique_ptr<Effet>>& Carte::getEffetsCarte() const { return effetCarte; }
+
+const std::vector<std::unique_ptr<Effet>>& Carte::getEffetsFaction() const { return effetFaction; }
+
 SousTypeCarte Carte::getTypeSecondaire() const { return typeSecondaire; }
 
 SousTypeCarte Carte::getTypeTertiaire() const { return typeTertiaire; }
@@ -24,19 +31,7 @@ SousTypeCarte Carte::getTypeTertiaire() const { return typeTertiaire; }
 TypeCarte Carte::getType() const { return typePrimaire; }
 
 void Carte::afficherCarte() const {
-	std::cout << "Nom: " << nom << " | Cout: " << cout << " | Faction: " << to_string(faction) << "\n";
-	if(!effetCarte.empty()){
-		std::cout << " Effets: \n";
-		for(const auto &e : effetCarte){
-			if(e) std::cout << "  - " << e->getDescription() << "\n";
-		}
-	}
-	if(!effetFaction.empty()){
-		std::cout << " Effets de faction: \n";
-		for(const auto &e : effetFaction){
-			if(e) std::cout << "  - " << e->getDescription() << "\n";
-		}
-	}
+	std::cout << toString(60) << std::endl;
 }
 
 void Carte::onSacrifice(Player& /*proprietaire*/, Game& /*game*/) {
@@ -45,4 +40,10 @@ void Carte::onSacrifice(Player& /*proprietaire*/, Game& /*game*/) {
 
 Faction Carte::getFaction() const {
     return faction;
+}
+
+std::string Carte::toString(unsigned width) const {
+	ui::CardRenderer::Options opts;
+	opts.width = static_cast<int>(width);
+	return ui::CardRenderer::render(*this, opts);
 }

@@ -52,3 +52,14 @@ void EffetSacrifier::activerEffet(Player& proprietaire, Game& game){
         n--;
     }
 }
+
+std::string EffetSacrifier::toString() const {
+    std::string s = "Vous pouvez sacrifier jusqu'à ";
+    s += std::to_string(nombre);
+    s += " carte(s) de votre main ou de votre défausse";
+    if(effetSiSacrifie) {
+        s += ". Si vous le faites, ";
+        s += effetSiSacrifie->toString();
+    }
+    return s;
+}

@@ -9,6 +9,7 @@ class EffetDrawThenDiscard : public Effet{
     public:
         EffetDrawThenDiscard(int nb=1);
         void activerEffet(Player& proprietaire, Game& game) override;
+        std::string toString() const override;
 };
 
 #endif

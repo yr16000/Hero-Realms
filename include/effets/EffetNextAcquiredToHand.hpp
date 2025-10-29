@@ -9,6 +9,7 @@ class EffetNextAcquiredToHand : public Effet{
     public:
         EffetNextAcquiredToHand();
         void activerEffet(Player& proprietaire, Game& game) override;
+        std::string toString() const override;
 };
 
 #endif

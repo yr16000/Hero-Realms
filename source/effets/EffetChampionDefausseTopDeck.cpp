@@ -48,3 +48,7 @@ void EffetChampionDefausseTopDeck::activerEffet(Player& proprietaire, Game& game
     proprietaire.getDeck().push_back(std::move(def[chosenIdx]));
     def.erase(def.begin()+chosenIdx);
 }
+
+std::string EffetChampionDefausseTopDeck::toString() const {
+    return "Activer: Remettre un champion de la défausse sur le dessus du deck";
+}

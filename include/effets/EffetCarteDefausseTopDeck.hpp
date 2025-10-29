@@ -9,6 +9,7 @@ class EffetCarteDefausseTopDeck : public Effet{
     public:
 	    EffetCarteDefausseTopDeck();
 	    void activerEffet(Player& proprietaire, Game& game) override;
+	    std::string toString() const override;
 };
 
 #endif

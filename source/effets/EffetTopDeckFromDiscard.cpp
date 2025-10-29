@@ -18,3 +18,7 @@ void EffetTopDeckFromDiscard::activerEffet(Player& proprietaire, Game& game){
     proprietaire.getDefausse().erase(proprietaire.getDefausse().begin()+(choix-1));
     std::cout<< "Carte mise sur le dessus du deck.\n";
 }
+
+std::string EffetTopDeckFromDiscard::toString() const {
+    return std::string("Remettre une carte de la défausse sur le dessus du deck");
+}

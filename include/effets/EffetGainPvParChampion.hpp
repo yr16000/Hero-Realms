@@ -7,10 +7,11 @@
 
 class EffetGainPvParChampion : public Effet{
     private:
-        int perChampion;
+        int parChampion;
     public:
-        EffetGainPvParChampion(int perChampion=1);
+        EffetGainPvParChampion(int parChampion=1);
         void activerEffet(Player& proprietaire, Game& game) override;
+        std::string toString() const override;
 };
 
 #endif

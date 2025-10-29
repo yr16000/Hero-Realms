@@ -19,3 +19,7 @@ void EffetCarteDefausseTopDeck::activerEffet(Player& proprietaire, Game& game){
     proprietaire.getDefausse().erase(proprietaire.getDefausse().begin()+(choix-1));
     std::cout<< "Carte mise sur le dessus du deck.\n";
 }
+
+std::string EffetCarteDefausseTopDeck::toString() const {
+    return std::string("Choisir une carte dans la défausse et la mettre sur le dessus du deck");
+}

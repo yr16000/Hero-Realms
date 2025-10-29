@@ -24,4 +24,13 @@ inline std::string to_string(Faction f){
     return "Unknown";
 }
 
+inline std::string to_string(TypeCarte t){
+    switch(t){
+        case TypeCarte::Champion: return "Champion";
+        case TypeCarte::Action: return "Action";
+        case TypeCarte::Objet: return "Objet";
+    }
+    return "Unknown";
+}
+
 #endif

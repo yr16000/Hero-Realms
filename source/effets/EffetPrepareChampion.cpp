@@ -45,3 +45,8 @@ void EffetPrepareChampion::activerEffet(Player& proprietaire, Game& game) {
         champ->setEstActiver(false);
         std::cout << "Champion préparé.\n";
     }
+}
+
+std::string EffetPrepareChampion::toString() const {
+    return std::string("Préparer un champion en jeu (retirer l'état activé)");
+}

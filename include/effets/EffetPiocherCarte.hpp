@@ -8,6 +8,7 @@ class EffetPiocherCarte : public Effet{
 	public:
 		EffetPiocherCarte(int nb);
 		void activerEffet(Player& proprietaire, Game& game) override;
+		std::string toString() const override;
 };
 
 #endif

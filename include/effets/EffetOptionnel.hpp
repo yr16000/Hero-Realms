@@ -10,6 +10,7 @@ class EffetOptionnel : public Effet {
     public:
         EffetOptionnel(std::unique_ptr<Effet> effet);  // prend possession de l'effet
         void activerEffet(Player& proprietaire, Game& game) override;
+    std::string toString() const override;
 };
 
 #endif

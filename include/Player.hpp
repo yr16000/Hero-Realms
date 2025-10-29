@@ -50,6 +50,7 @@ class Player{
         std::vector<std::unique_ptr<Carte>>& getChampionsEnJeu();
         std::vector<std::unique_ptr<Carte>>& getMain();
         std::vector<std::unique_ptr<Carte>>& getDeck();
+        void melangerDeck();
         void afficherMain() const;
         void afficherChampionsEnJeu() const;
         void afficherDefausse() const;

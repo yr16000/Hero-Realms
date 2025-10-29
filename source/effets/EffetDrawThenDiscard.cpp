@@ -21,3 +21,7 @@ void EffetDrawThenDiscard::activerEffet(Player& proprietaire, Game& game){
         proprietaire.getDefausse().push_back(std::move(proprietaire.getMain()[choix-1]));
     }
 }
+
+std::string EffetDrawThenDiscard::toString() const {
+    return std::string("Piocher ") + std::to_string(nb) + " puis défausser " + std::to_string(nb);
+}

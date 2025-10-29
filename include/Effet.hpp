@@ -2,12 +2,9 @@
 #define EFFET_HPP
 #include <string>
 #include <memory>
-#include "Player.hpp"
-#include "Game.hpp"
 
 class Player;
 class Game;
-#include <string>
 
 class Effet{
     private:
@@ -16,7 +13,8 @@ class Effet{
         Effet(const std::string& desc);
         virtual ~Effet();
         virtual void activerEffet(Player& proprietaire, Game& game)=0;
-        std::string getDescription() const;
+        // Retourne une représentation lisible de l'effet pour l'affichage.
+        virtual std::string toString() const;
 };
 
 #endif

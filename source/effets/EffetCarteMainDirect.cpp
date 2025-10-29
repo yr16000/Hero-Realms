@@ -20,8 +20,7 @@ static std::unique_ptr<Carte> drawOne(Player& p) {
                 deck.push_back(std::move(c));
             }
             defausse.clear();
-            // naive shuffle: reverse deck (deterministic but acceptable for now)
-            std::reverse(deck.begin(), deck.end());
+            p.melangerDeck();
         }
     }
 
@@ -51,4 +50,9 @@ void EffetCarteMainDirect::activerEffet(Player& proprietaire, Game& /*game*/) {
         // put on top of deck: push_back is top (we draw from back)
         proprietaire.getDeck().push_back(std::move(carte));
     }
+}
+
+std::string EffetCarteMainDirect::toString() const {
+    return std::string("Piocher et révéler une carte; si elle est du type ") + ::to_string(typeRecherche) + 
+        std::string(" elle va dans la main, sinon elle retourne sur le dessus du deck");
 }

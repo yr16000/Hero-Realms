@@ -38,6 +38,11 @@ class Carte{
         SousTypeCarte getTypeSecondaire() const;
         SousTypeCarte getTypeTertiaire() const;
         TypeCarte getType() const;
+    int getCout() const;
+    const std::vector<std::unique_ptr<Effet>>& getEffetsCarte() const;
+    const std::vector<std::unique_ptr<Effet>>& getEffetsFaction() const;
+    // rendu texte uniforme de la carte
+    std::string toString(unsigned width = 40) const;
         void afficherCarte() const;
 };
 
