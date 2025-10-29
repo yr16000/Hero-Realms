@@ -178,6 +178,17 @@ void Player::afficherMain() const{
 	std::cout << "Main du joueur " << id << " (" << main.size() << " cartes)\n";
 }
 
+void Player::afficherChampionsEnJeu() const{
+	std::cout << "Champions en jeu du joueur " << id << " (" << championsEnJeu.size() << " cartes)\n";
+	for(size_t i=0;i<championsEnJeu.size();++i){
+		std::cout << i+1 << ". " << championsEnJeu[i]->getNom() << "\n";
+	}
+}
+
+void Player::afficherDefausse() const{
+	std::cout << "Defausse du joueur " << id << " (" << defausse.size() << " cartes)\n";
+}
+
 void Player::afficherStats() const{
 	std::cout << "Joueur " << id << " - PV: " << pv << " Or: " << gold << " Combat: " << combat << "\n";
 }

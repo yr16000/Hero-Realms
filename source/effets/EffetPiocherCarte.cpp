@@ -1,4 +1,6 @@
 #include "../../include/effets/EffetPiocherCarte.hpp"
+#include "../../include/Player.hpp"
+#include "../../include/Game.hpp"
 
 EffetPiocherCarte::EffetPiocherCarte(int nb) : Effet("Piocher carte"), nb(nb) {}
 

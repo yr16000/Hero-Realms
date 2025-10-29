@@ -1,6 +1,10 @@
 #include "../../include/effets/EffetAssomerChampion.hpp"
 #include <iostream>
 #include <algorithm>
+#include <vector>
+#include "../../include/Player.hpp"
+#include "../../include/Game.hpp"
+#include "../../include/Champion.hpp"
 
 EffetAssomerChampion::EffetAssomerChampion() : Effet("Assomer champion") {}
 

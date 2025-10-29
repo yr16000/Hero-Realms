@@ -5,6 +5,7 @@
 #include "Carte.hpp"
 #include <iostream>
 #include "Champion.hpp"
+#include "Game.hpp"
 
 class Game;
 

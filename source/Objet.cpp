@@ -1,4 +1,6 @@
 #include "../include/Objet.hpp"
+#include "../include/Player.hpp"
+#include "../include/Game.hpp"
 
 Objet::Objet(const std::string& nom, int cout,
     int gainGold, int gainCombat,
