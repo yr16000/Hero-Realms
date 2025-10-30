@@ -10,10 +10,6 @@
 class Player;
 class Game;
 
-enum class SousTypeCarte {Aucun, Dragon, Humain, Mage, Paladin, Pretre, Guerrier, Moine, Ogre,
-    Voleur, Assassin, Vampire, Necromancien, Demon, Elfe, Geant, Loup, Troll, Sort, Malédiction,
-    Monnaie, ArmeMêlée, Épée, Dague, Gemme};
-
 class Carte{
     protected:
         std::string nom;
