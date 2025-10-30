@@ -7,6 +7,9 @@
 #include <memory>
 
 
+class Player;
+class Game;
+
 enum class SousTypeCarte {Aucun, Dragon, Humain, Mage, Paladin, Pretre, Guerrier, Moine, Ogre,
     Voleur, Assassin, Vampire, Necromancien, Demon, Elfe, Geant, Loup, Troll, Sort, Malédiction,
     Monnaie, ArmeMêlée, Épée, Dague, Gemme};
@@ -17,8 +20,8 @@ class Carte{
         int cout;
         Faction faction;
         TypeCarte typePrimaire;
-        SousTypeCarte typeSecondaire;
-        SousTypeCarte typeTertiaire;
+        TypeSecondaire typeSecondaire;
+        TypeTertiaire typeTertiaire;
         std::vector<std::unique_ptr<Effet>> effetCarte;
         std::vector<std::unique_ptr<Effet>> effetFaction;
         bool utilisee;
@@ -26,8 +29,8 @@ class Carte{
         Carte(const std::string& nom, int cout, const Faction faction, TypeCarte typePrimaire,
             std::vector<std::unique_ptr<Effet>>&& effetsCarte,
             std::vector<std::unique_ptr<Effet>>&& effetsFaction = {},
-            const SousTypeCarte typeSecondaire=SousTypeCarte::Aucun,
-            const SousTypeCarte typeTertiaire=SousTypeCarte::Aucun);
+            const TypeSecondaire typeSecondaire=TypeSecondaire::Aucun,
+            const TypeTertiaire typeTertiaire=TypeTertiaire::Aucun);
         virtual ~Carte();
         virtual void activer(Player& proprietaire, Game& game) = 0;
         virtual void onSacrifice(Player& proprietaire, Game& game);
@@ -35,8 +38,8 @@ class Carte{
         bool estUtilisee() const;
         std::string getNom() const;
         Faction getFaction() const;
-        SousTypeCarte getTypeSecondaire() const;
-        SousTypeCarte getTypeTertiaire() const;
+        TypeSecondaire getTypeSecondaire() const;
+        TypeTertiaire getTypeTertiaire() const;
         TypeCarte getType() const;
     int getCout() const;
     const std::vector<std::unique_ptr<Effet>>& getEffetsCarte() const;

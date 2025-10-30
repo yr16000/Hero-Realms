@@ -2,6 +2,11 @@
 #include <iostream>
 #include <algorithm>
 #include <random>
+#include "../include/Objet.hpp"
+#include "../include/Action.hpp"
+#include "../include/Champion.hpp"
+#include <cctype>
+#include "../include/ui/CardRenderer.hpp"
 
 Game::Game(){
     // create two players
@@ -15,12 +20,25 @@ void Game::demarrerPartie(){
     std::cout << "Demarrage de la partie\n";
 }
 
+// (DataLoader removed) 
+
 void Game::tourDeJeu(Player& joueur){
     std::cout << "Tour du joueur " << joueur.getId() << "\n";
 }
 
 void Game::afficherMarche() const{
     std::cout << "Marche: (" << marche.size() << " cartes)\n";
+    ui::CardRenderer::Options opts;
+    opts.width = 60;
+    for(size_t i=0;i<marche.size();++i){
+        std::cout << "--- Carte " << i << " ---\n";
+        try{
+            std::cout << ui::CardRenderer::render(*marche[i], opts) << "\n";
+        } catch(...){
+            // fallback simple name if rendering fails
+            std::cout << marche[i]->getNom() << " (cout=" << marche[i]->getCout() << ")\n";
+        }
+    }
 }
 
 Carte* Game::acheterCarte(int index, Player& acheteur){

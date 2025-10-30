@@ -1,5 +1,7 @@
 #include "../../include/effets/EffetTopDeckFromDiscard.hpp"
+#include "../../include/Player.hpp"
 #include <iostream>
+#include <vector>
 
 EffetTopDeckFromDiscard::EffetTopDeckFromDiscard(): Effet("Top deck from discard"){}
 

@@ -1,6 +1,8 @@
 #include "../../include/effets/EffetPrepareChampion.hpp"
 #include <iostream>
 #include <algorithm>
+#include "../../include/Champion.hpp"
+#include <vector>
 
 EffetPrepareChampion::EffetPrepareChampion() : Effet("Préparer un champion") {}
 

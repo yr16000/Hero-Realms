@@ -1,4 +1,5 @@
 #include "../../include/effets/EffetTopDeckNextAcquired.hpp"
+#include "../../include/Player.hpp"
 #include <iostream>
 
 EffetTopDeckNextAcquired::EffetTopDeckNextAcquired(): Effet("Top deck next acquired"){}

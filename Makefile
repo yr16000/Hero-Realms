@@ -1,42 +1,55 @@
-#  Config 
-CXX       := g++
-CXXFLAGS  := -std=c++17 -O2 -Wall -Wextra -Wpedantic -Iinclude
-LDFLAGS   :=
+SHELL := /bin/bash
 
-# Dossiers 
-SRC_DIR   := source
-OBJ_DIR   := build
-BIN       := main
+SRCDIR := source
+INCDIR := include
+BINDIR := bin
+BUILDDIR := build
+TARGET := $(BINDIR)/hero_realms
 
-# Sources (récursif) 
-SRC       := $(shell find $(SRC_DIR) -name '*.cpp')
-OBJ       := $(patsubst $(SRC_DIR)/%.cpp,$(OBJ_DIR)/%.o,$(SRC))
-DEP       := $(OBJ:.o=.d)
+CXX := g++
+CPPFLAGS := -I$(INCDIR)
+CXXFLAGS := -std=c++17 -Wall -Wextra -pedantic
+LDFLAGS := 
 
-# Règles 
-all: $(BIN)
+# optimisation / debug flags
+RELEASE_FLAGS := -O2
+DEBUG_FLAGS := -g -O0 -DDEBUG
 
-$(BIN): $(OBJ)
-	$(CXX) $(OBJ) -o $@ $(LDFLAGS)
+# collect sources recursively
+SRCS := $(shell find $(SRCDIR) -name '*.cpp')
+OBJS := $(patsubst $(SRCDIR)/%.cpp,$(BUILDDIR)/%.o,$(SRCS))
 
-$(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp | $(OBJ_DIR)
+.PHONY: all release debug clean run help
+
+all: release
+
+release: CXXFLAGS += $(RELEASE_FLAGS)
+release: $(TARGET)
+
+debug: CXXFLAGS += $(DEBUG_FLAGS)
+debug: $(TARGET)
+
+$(TARGET): $(OBJS) | $(BINDIR)
+	@echo "Linking $@"
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -o $@ $(OBJS) $(LDFLAGS)
+
+# compile objects keeping directory structure in build/
+$(BUILDDIR)/%.o: $(SRCDIR)/%.cpp | $(BUILDDIR)
 	@mkdir -p $(dir $@)
-	$(CXX) $(CXXFLAGS) -MMD -MP -c $< -o $@
+	@echo "Compiling $<"
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c $< -o $@
 
-$(OBJ_DIR):
-	mkdir -p $@
+# ensure output dirs exist
+$(BINDIR) $(BUILDDIR):
+	@mkdir -p $@
 
-# Utilitaires 
-.PHONY: all clean run list
-
-run: $(BIN)
-	./$(BIN)
+run: all
+	@echo "Running $(TARGET)"
+	@$(TARGET)
 
 clean:
-	rm -rf $(OBJ_DIR) $(BIN)
+	@echo "Cleaning build and bin directories"
+	@rm -rf $(BUILDDIR) $(BINDIR)
 
-list:
-	@echo "Sources:"; printf " - %s\n" $(SRC)
-
-# Dépendances auto
--include $(DEP)
+help:
+	@printf "Usage:\n  make            (alias for make release)\n  make release    (optimised build)\n  make debug      (debug build)\n  make run        (build then run)\n  make clean\n"

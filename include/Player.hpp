@@ -4,9 +4,7 @@
 #include <memory>
 #include "Carte.hpp"
 #include <iostream>
-#include "Champion.hpp"
-#include "Game.hpp"
-
+// forward declaration to avoid circular include
 class Game;
 
 class Player{
