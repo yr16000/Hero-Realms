@@ -5,8 +5,8 @@
 Carte::Carte(const std::string& nom, int cout, const Faction faction, TypeCarte typePrimaire,
 	std::vector<std::unique_ptr<Effet>>&& effetsCarte,
 	std::vector<std::unique_ptr<Effet>>&& effetsFaction,
-	const SousTypeCarte typeSecondaire,
-	const SousTypeCarte typeTertiaire)
+	const TypeSecondaire typeSecondaire,
+	const TypeTertiaire typeTertiaire)
 	: nom(nom), cout(cout), faction(faction), typePrimaire(typePrimaire), typeSecondaire(typeSecondaire), typeTertiaire(typeTertiaire),
 	  effetCarte(std::move(effetsCarte)), effetFaction(std::move(effetsFaction)), utilisee(false) {}
 
@@ -24,9 +24,9 @@ const std::vector<std::unique_ptr<Effet>>& Carte::getEffetsCarte() const { retur
 
 const std::vector<std::unique_ptr<Effet>>& Carte::getEffetsFaction() const { return effetFaction; }
 
-SousTypeCarte Carte::getTypeSecondaire() const { return typeSecondaire; }
+TypeSecondaire Carte::getTypeSecondaire() const { return typeSecondaire; }
 
-SousTypeCarte Carte::getTypeTertiaire() const { return typeTertiaire; }
+TypeTertiaire Carte::getTypeTertiaire() const { return typeTertiaire; }
 
 TypeCarte Carte::getType() const { return typePrimaire; }
 

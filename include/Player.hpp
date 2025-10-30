@@ -29,8 +29,8 @@ class Player{
         void modiffGold(int nb);
         void modiffCombat(int nb);
         void modiffHeal(int nb);
-        void soigner(int nb);
-        void attaquer(Player& cible, int nb,Carte* carte=nullptr);
+        void soigner();
+        void attaquer(Player& cible, Champion* carte=nullptr);
         void subirDegat(int nb);
         void jouerCarte(int index, Game& game);
         void sacrifierCarte(Carte* carte, Game& game);
@@ -54,6 +54,7 @@ class Player{
         void afficherChampionsEnJeu() const;
         void afficherDefausse() const;
         void afficherStats() const;
+        void resetPourNouveauTour();
 };
 
 

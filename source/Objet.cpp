@@ -5,8 +5,8 @@
 Objet::Objet(const std::string& nom, int cout,
     int gainGold, int gainCombat,
     std::vector<std::unique_ptr<Effet>>&& effetsSacrifice,
-    const SousTypeCarte typeSecondaire,
-    const SousTypeCarte typeTertiaire)
+    const TypeSecondaire typeSecondaire,
+    const TypeTertiaire typeTertiaire)
     : Carte(nom, cout, Faction::Guilde, TypeCarte::Objet, {}, {}, typeSecondaire, typeTertiaire),
       gainGold(gainGold), gainCombat(gainCombat),
       effetSacrifice(std::move(effetsSacrifice)) {}

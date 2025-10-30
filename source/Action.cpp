@@ -6,8 +6,8 @@ Action::Action(const std::string& nom, int cout, const Faction faction,
     std::vector<std::unique_ptr<Effet>>&& effetsCarte,
     std::vector<std::unique_ptr<Effet>>&& effetsFaction,
     std::vector<std::unique_ptr<Effet>>&& effetsSacrifice,
-    const SousTypeCarte typeSecondaire,
-    const SousTypeCarte typeTertiaire)
+    const TypeSecondaire typeSecondaire,
+    const TypeTertiaire typeTertiaire)
     : Carte(nom, cout, faction, TypeCarte::Action, std::move(effetsCarte), std::move(effetsFaction), typeSecondaire, typeTertiaire),
       effetSacrifice(std::move(effetsSacrifice)) {
     if(sacrificeFlag) {

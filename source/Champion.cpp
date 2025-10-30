@@ -7,8 +7,8 @@ Champion::Champion(const std::string& nom, int cout, const Faction faction,
     int pv, bool estGarde,
     std::vector<std::unique_ptr<Effet>>&& effetsCarte,
     std::vector<std::unique_ptr<Effet>>&& effetsFaction,
-    const SousTypeCarte typeSecondaire,
-    const SousTypeCarte typeTertiaire)
+    const TypeSecondaire typeSecondaire,
+    const TypeTertiaire typeTertiaire)
     : Carte(nom, cout, faction, TypeCarte::Champion, std::move(effetsCarte), std::move(effetsFaction), typeSecondaire, typeTertiaire),
       pv(pv), estGarde(estGarde) {}
 
@@ -61,3 +61,4 @@ void Champion::subirDegat(int nb) {
 bool Champion::getEstGarde() { return estGarde; }
 bool Champion::getEstActiver() { return estActiver; }
 void Champion::setEstActiver(bool val) { estActiver = val; }
+int Champion::getPv() const { return pv; }

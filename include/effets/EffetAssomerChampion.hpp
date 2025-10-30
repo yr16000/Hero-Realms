@@ -7,7 +7,7 @@ class EffetAssomerChampion : public Effet{
     public:
         EffetAssomerChampion();
         void activerEffet(Player& proprietaire, Game& game) override;
-    std::string toString() const override;
+        std::string toString() const override;
 };
 
 #endif

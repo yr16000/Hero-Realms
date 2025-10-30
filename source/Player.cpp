@@ -4,6 +4,7 @@
 #include <iostream>
 #include <algorithm>
 #include <random>
+#include "../include/Champion.hpp"
 
 static std::mt19937 rng((std::random_device())());
 
@@ -71,12 +72,47 @@ void Player::modiffHeal(int nb){
 	heal += nb;
 }
 
-void Player::soigner(int nb){
-	pv += nb;
+void Player::soigner(){
+	pv += heal;
 }
 
-void Player::attaquer(Player& cible, int nb, Carte* carte){
-	cible.subirDegat(nb);
+void Player::attaquer(Player& cible, Champion* carte=nullptr){
+	bool attaqueBloquee = false;
+	// Check if any defending champions block the attack
+	for(auto &defenseur : cible.getChampionsEnJeu()){
+		Champion* champ = dynamic_cast<Champion*>(defenseur.get());
+		if(champ && champ->getEstGarde()){
+			attaqueBloquee = true;
+			break;
+		}
+	}
+
+	if(attaqueBloquee){
+		if(carte && carte->getEstGarde()){
+			std::cout << "Attaque bloquée par le champion garde. Attaque autorisée contre ce champion.\n";
+			if(combat<carte->getPv()){
+				std::cout << "Pas assez de points de combat pour attaquer avec ce champion.\n";
+				return;
+			}
+			combat -= carte->getPv();
+			carte->subirDegat(carte->getPv());
+		} 
+		else {
+			std::cout << "Attaque bloquée par un champion garde. Choisissez un champion garde pour attaquer.\n";
+			return;
+		}
+	}
+	if(carte){
+		if(combat<carte->getPv()){
+			std::cout << "Pas assez de points de combat pour attaquer avec ce champion.\n";
+			return;
+		}
+		combat -= carte->getPv();
+		cible.subirDegat(carte->getPv());
+	} else {
+		cible.subirDegat(combat);
+		combat = 0;
+	}
 }
 
 void Player::subirDegat(int nb){
@@ -84,14 +120,14 @@ void Player::subirDegat(int nb){
 }
 
 void Player::jouerCarte(int index, Game& game){
-	if(index < 0 || static_cast<size_t>(index) >= main.size()){
+	if(index < 1 || static_cast<size_t>(index) >= main.size()){
 		std::cout << "Index de carte invalide\n";
 		return;
 	}
 	// take card from hand
-	std::unique_ptr<Carte> c = std::move(main[index]);
+	std::unique_ptr<Carte> c = std::move(main[index-1]);
 	// remove gap
-	main.erase(main.begin()+index);
+	main.erase(main.begin()+index-1);
 
 	if(!c){
 		std::cout << "Carte nulle\n";
@@ -193,3 +229,8 @@ void Player::afficherStats() const{
 	std::cout << "Joueur " << id << " - PV: " << pv << " Or: " << gold << " Combat: " << combat << "\n";
 }
 
+void Player::resetPourNouveauTour(){
+	combat = 0;
+	gold = 0;
+	heal = 0;
+}
