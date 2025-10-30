@@ -19,6 +19,10 @@ void EffetDrawThenDiscard::activerEffet(Player& proprietaire, Game& game){
             std::cin >> choix;
         }
         proprietaire.getDefausse().push_back(std::move(proprietaire.getMain()[choix-1]));
+        // remove the moved-from card from hand
+        proprietaire.getMain().erase(proprietaire.getMain().begin() + (choix-1));
+        // decrement remaining discards
+        --n;
     }
 }
 

@@ -57,7 +57,7 @@ void EffetAssomerChampion::activerEffet(Player& proprietaire, Game& game){
     std::cout << "Sélectionnez le numéro du champion à assommer : ";
     int index;
     std::cin >> index;
-    while(index < 0 || index >= (int)adversaire->getChampionsEnJeu().size()) {
+    while(index < 1 || index > (int)adversaire->getChampionsEnJeu().size()) {
         std::cout << "Index invalide, choisissez un autre champion.\n";
         std::cout << "Choisissez :\n";
         std::cin >> index;

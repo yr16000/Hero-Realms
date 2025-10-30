@@ -38,26 +38,16 @@ void Player::melangerDeck(){
 
 
 void Player::acheterCarte(int index, Game& game){
-	// Ask the game to perform the purchase. Game::acheterCarte is responsible
-	// for ownership/transfer; here we only call it and react to flags.
+	// Ask the game to perform the purchase; Game will transfer ownership into
+	// the appropriate player container and return a pointer to the acquired card.
 	Carte* carte = game.acheterCarte(index, *this);
 	if(!carte){
 		std::cout << "Achat echoue ou carte inexistante\n";
 		return;
 	}
 
-	// Note: we don't take ownership here because Game likely manages that.
-	// Respect the "next acquired" flags semantics logically (reset flags after use).
-	if(nextAcquiredToHand){
-		std::cout << "La prochaine carte acquise va dans la main (flag actif)\n";
-		// actual addition to hand requires ownership transfer; omitted here
-		nextAcquiredToHand = false;
-	} else if(nextAcquiredToTopDeck){
-		std::cout << "La prochaine carte acquise va sur le dessus du deck (flag actif)\n";
-		nextAcquiredToTopDeck = false;
-	} else {
-		std::cout << "Carte achetee et mise en defausse par defaut\n";
-	}
+	// The transfer and flag consumption are handled inside Game::acheterCarte.
+	std::cout << "Achat reussi: " << carte->getNom() << " (cout=" << carte->getCout() << ")\n";
 }
 
 void Player::modiffGold(int nb){
@@ -120,7 +110,7 @@ void Player::subirDegat(int nb){
 }
 
 void Player::jouerCarte(int index, Game& game){
-	if(index < 1 || static_cast<size_t>(index) >= main.size()){
+	if(index < 1 || static_cast<size_t>(index) > main.size()){
 		std::cout << "Index de carte invalide\n";
 		return;
 	}

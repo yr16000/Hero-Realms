@@ -43,8 +43,50 @@ void Game::afficherMarche() const{
 
 Carte* Game::acheterCarte(int index, Player& acheteur){
     if(index<0 || index >= (int)marche.size()) return nullptr;
-    // For now, just return raw pointer; ownership remains with Game
-    return marche[index].get();
+
+    // Simple purchase logic (no global modifiers): check funds, pay, transfer ownership
+    Carte* cartePtr = marche[index].get();
+    int prix = cartePtr->getCout();
+    if(acheteur.getGold() < prix){
+        std::cout << "Achat impossible : fonds insuffisants (cout=" << prix << ", or=" << acheteur.getGold() << ")\n";
+        return nullptr;
+    }
+
+    // debit du joueur
+    acheteur.modiffGold(-prix);
+
+    // take ownership
+    std::unique_ptr<Carte> carte = std::move(marche[index]);
+    // remove from market
+    marche.erase(marche.begin() + index);
+
+    // decide destination based on player's flags and card type
+    if(acheteur.getNextAcquiredToHand()){
+        std::cout << "Carte acquise -> main (flag nextAcquiredToHand).\n";
+        acheteur.getMain().push_back(std::move(carte));
+        acheteur.setNextAcquiredToHand(false);
+        return acheteur.getMain().back().get();
+    }
+
+    // If card is an action and nextAcquiredActionToTopDeck is set, put on top of deck
+    if(acheteur.getNextAcquiredActionToTopDeck() && cartePtr->getType() == TypeCarte::Action){
+        std::cout << "Carte action acquise -> dessus du deck (flag nextAcquiredActionToTopDeck).\n";
+        acheteur.getDeck().insert(acheteur.getDeck().begin(), std::move(carte));
+        acheteur.setNextAcquiredActionToTopDeck(false);
+        return acheteur.getDeck().front().get();
+    }
+
+    if(acheteur.getNextAcquiredToTopDeck()){
+        std::cout << "Carte acquise -> dessus du deck (flag nextAcquiredToTopDeck).\n";
+        acheteur.getDeck().insert(acheteur.getDeck().begin(), std::move(carte));
+        acheteur.setNextAcquiredToTopDeck(false);
+        return acheteur.getDeck().front().get();
+    }
+
+    // Default: go to defausse
+    std::cout << "Carte achetee et mise en defausse par defaut.\n";
+    acheteur.getDefausse().push_back(std::move(carte));
+    return acheteur.getDefausse().back().get();
 }
 
 void Game::ajouterCarteMarche(std::unique_ptr<Carte> carte){
