@@ -9,8 +9,10 @@ class Game{
         std::vector<Player> players;
         std::vector<std::unique_ptr<Carte>> marche;
         std::vector<std::unique_ptr<Carte>> pioche;
+        std::vector<std::unique_ptr<Carte>> gemmesDeFeu;
+        std::vector<std::unique_ptr<Carte>> deckBase1;
+        std::vector<std::unique_ptr<Carte>> deckBase2;
         std::vector<std::unique_ptr<Carte>> ecartees;
-
     public:
         Game();
         std::vector<Player>& getPlayers();

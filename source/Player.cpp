@@ -127,7 +127,20 @@ void Player::jouerCarte(int index, Game& game){
 	// Play based on primary type
 	switch(c->getType()){
 		case TypeCarte::Champion:
-			championsEnJeu.push_back(std::move(c));
+			{
+				// When playing a champion from hand, let the player choose to simply
+				// put it into play or to put it into play and activate it immediately.
+				std::cout << "Vous jouez un champion: " << c->getNom() << "\n";
+				std::cout << "1) Mettre en jeu seulement\n2) Mettre en jeu et activer maintenant\nChoix (1/2): ";
+				int choix = 1;
+				if(!(std::cin >> choix)) choix = 1;
+				// Place champion into play
+				championsEnJeu.push_back(std::move(c));
+				if(choix == 2){
+					Champion* champ = dynamic_cast<Champion*>(championsEnJeu.back().get());
+					if(champ) champ->activer(*this, game);
+				}
+			}
 			break;
 		case TypeCarte::Action:
 			// activate then send to defausse

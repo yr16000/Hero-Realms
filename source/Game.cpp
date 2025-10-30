@@ -31,7 +31,7 @@ void Game::afficherMarche() const{
     ui::CardRenderer::Options opts;
     opts.width = 60;
     for(size_t i=0;i<marche.size();++i){
-        std::cout << "--- Carte " << i << " ---\n";
+        std::cout << "--- Carte " << i+1 << " ---\n";
         try{
             std::cout << ui::CardRenderer::render(*marche[i], opts) << "\n";
         } catch(...){
