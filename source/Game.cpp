@@ -60,6 +60,15 @@ Carte* Game::acheterCarte(int index, Player& acheteur){
     // remove from market
     marche.erase(marche.begin() + index);
 
+    // Refill market from pioche if possible (keep market size stable)
+    if(!pioche.empty()){
+        // move top card from pioche into the vacated market slot (or end if erased last)
+        std::unique_ptr<Carte> c = std::move(pioche.back());
+        pioche.pop_back();
+        // insert at the same index (if index == marche.size() this appends at end)
+        marche.insert(marche.begin() + index, std::move(c));
+    }
+
     // decide destination based on player's flags and card type
     if(acheteur.getNextAcquiredToHand()){
         std::cout << "Carte acquise -> main (flag nextAcquiredToHand).\n";

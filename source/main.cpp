@@ -114,7 +114,7 @@ int main(){
         if(cmd == "p"){
             std::cout << "Index de la carte dans la main (1-based): ";
             int idx = 0; if(!(std::cin >> idx)) break;
-            p.jouerCarte(idx-1, game);
+            p.jouerCarte(idx, game);
             continue;
         }
 
