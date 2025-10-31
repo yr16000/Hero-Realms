@@ -6,6 +6,7 @@
 #include <iostream>
 // forward declaration to avoid circular include
 class Game;
+class Champion;
 
 class Player{
     private:
@@ -29,8 +30,8 @@ class Player{
         void modiffGold(int nb);
         void modiffCombat(int nb);
         void modiffHeal(int nb);
-        void soigner();
-        void soigner(int montant);
+        //void soigner();
+        void soigner(int nb);
         void attaquer(Player& cible, Champion* carte=nullptr);
         void subirDegat(int nb);
         void jouerCarte(int index, Game& game);

@@ -3,6 +3,7 @@
 #define CARD_RENDERER_HPP
 
 #include <string>
+#include <vector>        
 #include "../Carte.hpp"
 
 namespace ui {
@@ -15,9 +16,10 @@ struct CardRenderer {
         int padding = 1;
     };
 
+    // rendu principal
     static std::string render(const Carte& carte, const Options& opts);
 
-private:
+    // helpers utiles aussi dans le .cpp
     static std::string padCenter(const std::string& s, int width);
     static std::string padRight(const std::string& s, int width);
     static std::vector<std::string> wrapText(const std::string& text, int maxWidth);

@@ -2,14 +2,14 @@
 #define EFFETCARTEMAINDIRECT_HPP
 
 #include "../Effet.hpp"
-#include "../Enums.h"
+
 
 class EffetCarteMainDirect : public Effet {
-private:
-    TypeCarte typeRecherche;
 public:
-    EffetCarteMainDirect(TypeCarte type);
+    EffetCarteMainDirect();
+
     void activerEffet(Player& proprietaire, Game& game) override;
+
     std::string toString() const override;
 };
 

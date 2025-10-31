@@ -8,7 +8,7 @@ TARGET := $(BINDIR)/hero_realms
 
 CXX := g++
 CPPFLAGS := -I$(INCDIR)
-CXXFLAGS := -std=c++17 -Wall -Wextra -pedantic
+CXXFLAGS = -std=c++17 -Wall -Wextra -pedantic -O2 -Iinclude -Wno-unused-parameter
 LDFLAGS := 
 
 # optimisation / debug flags
