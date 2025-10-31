@@ -36,6 +36,10 @@ void Player::melangerDeck(){
 	std::shuffle(deck.begin(), deck.end(), rng);
 }
 
+void Player::melangerDefausse(){
+	if(defausse.empty()) return;
+	std::shuffle(defausse.begin(), defausse.end(), rng);
+}
 
 void Player::acheterCarte(int index, Game& game){
 	// Ask the game to perform the purchase; Game will transfer ownership into

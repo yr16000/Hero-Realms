@@ -126,3 +126,28 @@ void Game::setCarteEnActivation(Carte* c) {
 Carte* Game::getCarteEnActivation() const {
     return carteEnActivation;
 }
+
+void Game::initialiserMarche() {
+    // Example initialization: add first 5 cards from pioche to marche
+    for (int i = 0; i < 5 && !pioche.empty(); ++i) {
+        marche.push_back(std::move(pioche.back()));
+        pioche.pop_back();
+    }
+}
+
+void Game::initialiserDeckBase() {
+    Player& player1 = players[0];
+    Player& player2 = players[1];
+    for(auto& carte : deckBase1) {
+        player1.getDefausse().push_back(std::move(carte));
+    }
+    for(auto& carte : deckBase2) {
+        player2.getDefausse().push_back(std::move(carte));
+    }
+    deckBase1.clear();
+    deckBase2.clear();
+    player1.melangerDefausse();
+    player2.melangerDefausse();
+    player1.piocherCarte(5);
+    player2.piocherCarte(5);
+}

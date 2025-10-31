@@ -24,6 +24,8 @@ class Game{
         Carte* acheterCarte(int index, Player& acheteur);
         void ajouterCarteMarche(std::unique_ptr<Carte> carte);
         void melangerPioche();
+        void initialiserMarche();
+        void initialiserDeckBase();
         void afficherEtatJoueurs() const;
         bool estTerminee() const;
         void afficherGagnant() const;
