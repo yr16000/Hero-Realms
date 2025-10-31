@@ -12,7 +12,7 @@ class Carte;
 
 namespace CardLoader {
     // Charge le "base set" codé en dur (utilisé si tu veux une initialisation statique)
-    std::vector<std::unique_ptr<Carte>> loadMarket();
+    std::vector<std::unique_ptr<Carte>> loadPioche();
 
     std::vector<std::unique_ptr<Carte>> loadFireGems(int count = 16);
 

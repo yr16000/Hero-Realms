@@ -8,7 +8,7 @@ int main() {
     using namespace ui;
 
     // 1. on charge le paquet
-    std::vector<std::unique_ptr<Carte>> cartes = CardLoader::loadMarket();
+    std::vector<std::unique_ptr<Carte>> cartes = CardLoader::loadPioche();
 
     std::cout << "Taille du deck : " << cartes.size() << "\n\n";
 

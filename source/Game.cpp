@@ -7,7 +7,7 @@
 #include "../include/Champion.hpp"
 #include <cctype>
 #include "../include/ui/CardRenderer.hpp"
-#include "CardLoader.cpp"
+#include "../include/CardLoader.hpp"
 
 Game::Game(){
     // create two players
@@ -18,7 +18,12 @@ Game::Game(){
 std::vector<Player>& Game::getPlayers(){ return players; }
 
 void Game::demarrerPartie(){
-    std::cout << "Demarrage de la partie\n";
+    pioche=CardLoader::loadPioche();
+    melangerPioche();
+    initialiserDeckBase();
+    initialiserMarche();
+    initialiserGemmesDeFeu();
+    std::cout << "Initialisation terminée. Demarrage de la partie\n";
 }
 
 // (DataLoader removed) 

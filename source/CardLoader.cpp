@@ -33,7 +33,7 @@
 #include <memory>
 #include <vector>
 
-std::vector<std::unique_ptr<Carte>> CardLoader::loadMarket() {
+std::vector<std::unique_ptr<Carte>> CardLoader::loadPioche() {
 
     std::vector<std::unique_ptr<Carte>> cards;
     cards.reserve(200); // large, pour éviter les realloc
