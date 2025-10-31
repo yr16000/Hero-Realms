@@ -15,6 +15,7 @@ class Game{
         std::vector<std::unique_ptr<Carte>> ecartees;
         // Pointer to the card currently activating its effects (or nullptr)
         Carte* carteEnActivation = nullptr;
+        bool godMode = false;
     public:
         Game();
         std::vector<Player>& getPlayers();
@@ -31,6 +32,10 @@ class Game{
         void afficherEtatJoueurs() const;
         bool estTerminee() const;
         void afficherGagnant() const;
+        // God mode controls
+        void setGodMode(bool val);
+        void toggleGodMode();
+        bool isGodMode() const;
         // Activation context helpers
         void setCarteEnActivation(Carte* c);
         Carte* getCarteEnActivation() const;

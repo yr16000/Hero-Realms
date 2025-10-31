@@ -41,7 +41,10 @@ void Player::melangerDefausse(){
 	std::shuffle(defausse.begin(), defausse.end(), rng);
 }
 
-void Player::acheterCarte(int index, Game& game){
+void Player::acheterCarte(Game& game){
+	int index = 0;
+	std::cout << "Entrez l'index de la carte à acheter: ";
+	std::cin >> index;
 	// Ask the game to perform the purchase; Game will transfer ownership into
 	// the appropriate player container and return a pointer to the acquired card.
 	Carte* carte = game.acheterCarte(index, *this);

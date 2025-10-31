@@ -40,62 +40,97 @@ void Game::afficherMarche() const{
             std::cout << marche[i]->getNom() << " (cout=" << marche[i]->getCout() << ")\n";
         }
     }
+    if (godMode) {
+        std::cout << "-- Pioche (accessible en GodMode): " << pioche.size() << " cartes --\n";
+        for (size_t i = 0; i < pioche.size(); ++i) {
+            std::cout << "--- Pioche " << (marche.size() + i + 1) << " ---\n";
+            try {
+                std::cout << ui::CardRenderer::render(*pioche[i], opts) << "\n";
+            } catch(...) {
+                std::cout << pioche[i]->getNom() << " (cout=" << pioche[i]->getCout() << ")\n";
+            }
+        }
+    }
 }
 
 Carte* Game::acheterCarte(int index, Player& acheteur){
-    if(index<0 || index >= (int)marche.size()) return nullptr;
+    int marcheSize = (int)marche.size();
+    int piocheSize = (int)pioche.size();
+    int totalAvailable = marcheSize + (godMode ? piocheSize : 0);
+    if (index < 0 || index >= totalAvailable) return nullptr;
 
-    // Simple purchase logic (no global modifiers): check funds, pay, transfer ownership
-    Carte* cartePtr = marche[index].get();
-    int prix = cartePtr->getCout();
-    if(acheteur.getGold() < prix){
-        std::cout << "Achat impossible : fonds insuffisants (cout=" << prix << ", or=" << acheteur.getGold() << ")\n";
-        return nullptr;
+    bool fromPioche = false;
+    std::unique_ptr<Carte> carteUptr;
+    Carte* cartePtrRaw = nullptr;
+
+    if (index < marcheSize) {
+        cartePtrRaw = marche[index].get();
+    } else {
+        fromPioche = true;
+        int piocheIndex = index - marcheSize;
+        cartePtrRaw = pioche[piocheIndex].get();
     }
 
-    // debit du joueur
-    acheteur.modiffGold(-prix);
-
-    // take ownership
-    std::unique_ptr<Carte> carte = std::move(marche[index]);
-    // remove from market
-    marche.erase(marche.begin() + index);
-
-    // Refill market from pioche if possible (keep market size stable)
-    if(!pioche.empty()){
-        // move top card from pioche into the vacated market slot (or end if erased last)
-        std::unique_ptr<Carte> c = std::move(pioche.back());
-        pioche.pop_back();
-        // insert at the same index (if index == marche.size() this appends at end)
-        marche.insert(marche.begin() + index, std::move(c));
+    int prix = cartePtrRaw->getCout();
+    if (!godMode) {
+        if(acheteur.getGold() < prix){
+            std::cout << "Achat impossible : fonds insuffisants (cout=" << prix << ", or=" << acheteur.getGold() << ")\n";
+            return nullptr;
+        }
+        // debit du joueur
+        acheteur.modiffGold(-prix);
+    } else {
+        // in god mode, gold is unlimited: do not check or debit
+        std::cout << "GodMode: achat gratuit autorisé.\n";
     }
 
-    // decide destination based on player's flags and card type
+    // take ownership from appropriate container
+    if (!fromPioche) {
+        carteUptr = std::move(marche[index]);
+        marche.erase(marche.begin() + index);
+        if(!pioche.empty()){
+            std::unique_ptr<Carte> c = std::move(pioche.back());
+            pioche.pop_back();
+            marche.insert(marche.begin() + index, std::move(c));
+        }
+    } else {
+        int piocheIndex = index - marcheSize;
+        carteUptr = std::move(pioche[piocheIndex]);
+        pioche.erase(pioche.begin() + piocheIndex);
+    }
+
+    Carte* cartePtr = carteUptr.get();
+
+    // decide destination based on godMode or player's flags and card type
+    if (godMode) {
+        std::cout << "GodMode: carte acquise -> main directement.\n";
+        acheteur.getMain().push_back(std::move(carteUptr));
+        return acheteur.getMain().back().get();
+    }
+
     if(acheteur.getNextAcquiredToHand()){
         std::cout << "Carte acquise -> main (flag nextAcquiredToHand).\n";
-        acheteur.getMain().push_back(std::move(carte));
+        acheteur.getMain().push_back(std::move(carteUptr));
         acheteur.setNextAcquiredToHand(false);
         return acheteur.getMain().back().get();
     }
 
-    // If card is an action and nextAcquiredActionToTopDeck is set, put on top of deck
     if(acheteur.getNextAcquiredActionToTopDeck() && cartePtr->getType() == TypeCarte::Action){
         std::cout << "Carte action acquise -> dessus du deck (flag nextAcquiredActionToTopDeck).\n";
-        acheteur.getDeck().insert(acheteur.getDeck().begin(), std::move(carte));
+        acheteur.getDeck().insert(acheteur.getDeck().begin(), std::move(carteUptr));
         acheteur.setNextAcquiredActionToTopDeck(false);
         return acheteur.getDeck().front().get();
     }
 
     if(acheteur.getNextAcquiredToTopDeck()){
         std::cout << "Carte acquise -> dessus du deck (flag nextAcquiredToTopDeck).\n";
-        acheteur.getDeck().insert(acheteur.getDeck().begin(), std::move(carte));
+        acheteur.getDeck().insert(acheteur.getDeck().begin(), std::move(carteUptr));
         acheteur.setNextAcquiredToTopDeck(false);
         return acheteur.getDeck().front().get();
     }
 
-    // Default: go to defausse
     std::cout << "Carte achetee et mise en defausse par defaut.\n";
-    acheteur.getDefausse().push_back(std::move(carte));
+    acheteur.getDefausse().push_back(std::move(carteUptr));
     return acheteur.getDefausse().back().get();
 }
 
@@ -105,20 +140,29 @@ Carte* Game::acheterGemmeDeFeu(Player& acheteur){
     // Simple purchase logic (no global modifiers): check funds, pay, transfer ownership
     Carte* cartePtr = gemmesDeFeu[0].get();
     int prix = cartePtr->getCout();
-    if(acheteur.getGold() < prix){
-        std::cout << "Achat impossible : fonds insuffisants pour gemme de feu (cout=" << prix << ", or=" << acheteur.getGold() << ")\n";
-        return nullptr;
+    if (!godMode) {
+        if(acheteur.getGold() < prix){
+            std::cout << "Achat impossible : fonds insuffisants pour gemme de feu (cout=" << prix << ", or=" << acheteur.getGold() << ")\n";
+            return nullptr;
+        }
+        // debit du joueur
+        acheteur.modiffGold(-prix);
+    } else {
+        std::cout << "GodMode: achat gemme gratuit autorisé.\n";
     }
-
-    // debit du joueur
-    acheteur.modiffGold(-prix);
 
     // take ownership
     std::unique_ptr<Carte> carte = std::move(gemmesDeFeu[0]);
     // remove from gemmesDeFeu
     gemmesDeFeu.erase(gemmesDeFeu.begin());
 
-    // decide destination based on player's flags
+    // decide destination based on godMode or player's flags
+    if (godMode) {
+        std::cout << "GodMode: gemme acquise -> main directement.\n";
+        acheteur.getMain().push_back(std::move(carte));
+        return acheteur.getMain().back().get();
+    }
+
     if(acheteur.getNextAcquiredToHand()){
         std::cout << "Gemme de feu acquise -> main (flag nextAcquiredToHand).\n";
         acheteur.getMain().push_back(std::move(carte));
@@ -166,6 +210,31 @@ void Game::setCarteEnActivation(Carte* c) {
 
 Carte* Game::getCarteEnActivation() const {
     return carteEnActivation;
+}
+
+void Game::setGodMode(bool val) {
+    godMode = val;
+    std::cout << "GodMode " << (godMode ? "activé" : "désactivé") << "\n";
+    if (godMode) {
+        // set each player to 1 HP
+        for (auto &p : players) {
+            int current = p.getHp();
+            if (current != 1) {
+                // set to 1 by adjusting heal/pv directly via soigner
+                // compute difference
+                int diff = 1 - current;
+                p.soigner(diff);
+            }
+        }
+    }
+}
+
+void Game::toggleGodMode() {
+    setGodMode(!godMode);
+}
+
+bool Game::isGodMode() const {
+    return godMode;
 }
 
 void Game::initialiserMarche() {

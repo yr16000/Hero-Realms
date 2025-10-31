@@ -26,7 +26,7 @@ class Player{
     public:
         Player(int id);
         void piocherCarte(int nb);
-        void acheterCarte(int index, Game& game);
+        void acheterCarte(Game& game);
         void acheterGemmeDeFeu(Game& game);
         void modiffGold(int nb);
         void modiffCombat(int nb);
