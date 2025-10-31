@@ -58,7 +58,7 @@ void Champion::subirDegat(int nb) {
     pv -= nb;
 }
 
-bool Champion::getEstGarde() { return estGarde; }
+bool Champion::getEstGarde() const{ return estGarde; }
 bool Champion::getEstActiver() { return estActiver; }
 void Champion::setEstActiver(bool val) { estActiver = val; }
 int Champion::getPv() const { return pv; }

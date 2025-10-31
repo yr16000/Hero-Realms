@@ -62,11 +62,12 @@ void Player::modiffHeal(int nb){
 	heal += nb;
 }
 
-void Player::soigner(){
-	pv += heal;
+
+void Player::soigner(int nb){
+	pv += nb;
 }
 
-void Player::attaquer(Player& cible, Champion* carte=nullptr){
+void Player::attaquer(Player& cible, Champion* carte){
 	bool attaqueBloquee = false;
 	// Check if any defending champions block the attack
 	for(auto &defenseur : cible.getChampionsEnJeu()){
@@ -75,6 +76,7 @@ void Player::attaquer(Player& cible, Champion* carte=nullptr){
 			attaqueBloquee = true;
 			break;
 		}
+
 	}
 
 	if(attaqueBloquee){

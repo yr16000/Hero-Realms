@@ -17,7 +17,7 @@ class Champion : public Carte{
         void activer(Player& proprietaire, Game& game) override;
         void onSacrifice(Player& proprietaire, Game& game) override;
         void subirDegat(int nb);
-        bool getEstGarde();
+        bool getEstGarde() const;
         bool getEstActiver();
         void setEstActiver(bool val);
         int getPv() const;
