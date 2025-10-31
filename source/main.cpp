@@ -3,6 +3,7 @@
 #include "../include/Objet.hpp"
 #include "../include/Action.hpp"
 #include "../include/effets/EffetGainGold.hpp"
+#include "../include/effets/EffetChoix.hpp"
 
 #include <iostream>
 #include <memory>
@@ -135,5 +136,6 @@ int main(){
     }
 
     std::cout << "Fin de la partie.\n";
+    std::vector<std::unique_ptr<EffetChoix>> effets;
     return 0;
 }

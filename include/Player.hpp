@@ -30,6 +30,7 @@ class Player{
         void modiffCombat(int nb);
         void modiffHeal(int nb);
         void soigner();
+        void soigner(int montant);
         void attaquer(Player& cible, Champion* carte=nullptr);
         void subirDegat(int nb);
         void jouerCarte(int index, Game& game);

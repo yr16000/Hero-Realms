@@ -7,7 +7,7 @@
 EffetGainCombatParGarde::EffetGainCombatParGarde(int montantParGarde): Effet("Gain combat par garde"), montantParGarde(montantParGarde){}
 
 void EffetGainCombatParGarde::activerEffet(Player& proprietaire, Game& game){
-    int nbGardes=0;
+    int nbGardes=-1;
     for(const auto& champPtr : proprietaire.getChampionsEnJeu()){
         auto champion = dynamic_cast<Champion*>(champPtr.get());
         if(champion && champion->getEstGarde()){

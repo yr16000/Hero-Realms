@@ -118,3 +118,11 @@ bool Game::estTerminee() const{ return false; }
 void Game::afficherGagnant() const{
     std::cout << "Aucun gagnant determiner\n";
 }
+
+void Game::setCarteEnActivation(Carte* c) {
+    carteEnActivation = c;
+}
+
+Carte* Game::getCarteEnActivation() const {
+    return carteEnActivation;
+}

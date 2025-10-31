@@ -15,6 +15,7 @@
 #include "EffetDrawThenDiscard.hpp"
 #include "EffetGainCombatParChampion.hpp"
 #include "EffetGainPvParChampion.hpp"
+#include "EffetGainCombatParFaction.hpp"
 #include "EffetNextAcquiredToHand.hpp"
 #include "EffetOptionnel.hpp"
 #include "EffetPiocherCarte.hpp"

@@ -33,9 +33,13 @@ void Champion::activer(Player& proprietaire, Game& game) {
     }
 
     std::cout << "Activer champion: " << getNom() << "\n";
+    // Mark this card as the currently activating card so effects can detect the source
+    game.setCarteEnActivation(this);
     for(const auto& effet : effetCarte) {
         effet->activerEffet(proprietaire, game);
     }
+    // Clear activation context
+    game.setCarteEnActivation(nullptr);
 
     // Trigger faction effects if owner has a card of the same faction in hand
     for (const auto &carte : proprietaire.getMain()){

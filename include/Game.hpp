@@ -13,6 +13,8 @@ class Game{
         std::vector<std::unique_ptr<Carte>> deckBase1;
         std::vector<std::unique_ptr<Carte>> deckBase2;
         std::vector<std::unique_ptr<Carte>> ecartees;
+        // Pointer to the card currently activating its effects (or nullptr)
+        Carte* carteEnActivation = nullptr;
     public:
         Game();
         std::vector<Player>& getPlayers();
@@ -25,6 +27,9 @@ class Game{
         void afficherEtatJoueurs() const;
         bool estTerminee() const;
         void afficherGagnant() const;
+        // Activation context helpers
+        void setCarteEnActivation(Carte* c);
+        Carte* getCarteEnActivation() const;
 
 };
 

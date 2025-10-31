@@ -66,7 +66,11 @@ void Player::soigner(){
 	pv += heal;
 }
 
-void Player::attaquer(Player& cible, Champion* carte=nullptr){
+void Player::soigner(int montant){
+	pv += montant;
+}
+
+void Player::attaquer(Player& cible, Carte* carte = nullptr){
 	bool attaqueBloquee = false;
 	// Check if any defending champions block the attack
 	for(auto &defenseur : cible.getChampionsEnJeu()){
@@ -78,28 +82,36 @@ void Player::attaquer(Player& cible, Champion* carte=nullptr){
 	}
 
 	if(attaqueBloquee){
-		if(carte && carte->getEstGarde()){
-			std::cout << "Attaque bloquée par le champion garde. Attaque autorisée contre ce champion.\n";
-			if(combat<carte->getPv()){
-				std::cout << "Pas assez de points de combat pour attaquer avec ce champion.\n";
+		if(carte){
+			Champion* champAtt = dynamic_cast<Champion*>(carte);
+			if(champAtt && champAtt->getEstGarde()){
+				std::cout << "Attaque bloquée par le champion garde. Attaque autorisée contre ce champion.\n";
+				if(combat < champAtt->getPv()){
+					std::cout << "Pas assez de points de combat pour attaquer avec ce champion.\n";
+					return;
+				}
+				combat -= champAtt->getPv();
+				champAtt->subirDegat(champAtt->getPv());
+			} else {
+				std::cout << "Attaque bloquée par un champion garde. Choisissez un champion garde pour attaquer.\n";
 				return;
 			}
-			combat -= carte->getPv();
-			carte->subirDegat(carte->getPv());
-		} 
-		else {
+		} else {
 			std::cout << "Attaque bloquée par un champion garde. Choisissez un champion garde pour attaquer.\n";
 			return;
 		}
 	}
-	if(carte){
-		if(combat<carte->getPv()){
-			std::cout << "Pas assez de points de combat pour attaquer avec ce champion.\n";
-			return;
+
+	 else {
+		if(carte){
+			Champion* champAtt = dynamic_cast<Champion*>(carte);
+			if(combat < champAtt->getPv()){
+					std::cout << "Pas assez de points de combat pour attaquer avec ce champion.\n";
+					return;
+				}
+			combat -= champAtt->getPv();
+			champAtt->subirDegat(champAtt->getPv());
 		}
-		combat -= carte->getPv();
-		cible.subirDegat(carte->getPv());
-	} else {
 		cible.subirDegat(combat);
 		combat = 0;
 	}
@@ -236,4 +248,7 @@ void Player::resetPourNouveauTour(){
 	combat = 0;
 	gold = 0;
 	heal = 0;
+	nextAcquiredToHand = false;
+	nextAcquiredToTopDeck = false;
+	nextAcquiredActionToTopDeck = false;
 }
