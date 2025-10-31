@@ -7,6 +7,7 @@
 #include "../include/Champion.hpp"
 #include <cctype>
 #include "../include/ui/CardRenderer.hpp"
+#include "CardLoader.cpp"
 
 Game::Game(){
     // create two players
@@ -138,6 +139,8 @@ void Game::initialiserMarche() {
 void Game::initialiserDeckBase() {
     Player& player1 = players[0];
     Player& player2 = players[1];
+    deckBase1=CardLoader::loadPersonalDeck();
+    deckBase2=CardLoader::loadPersonalDeck();
     for(auto& carte : deckBase1) {
         player1.getDefausse().push_back(std::move(carte));
     }
