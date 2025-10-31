@@ -70,10 +70,10 @@ enum class TypeTertiaire {
 inline std::string to_string(Faction f){
     switch(f){
         case Faction::Aucun: return "Aucun";
-        case Faction::Imperiale: return "⭐️Imperiale";
-        case Faction::Guilde: return "🥏Guilde";
-        case Faction::Necros: return "👹Necros";
-        case Faction::Sauvage: return "🐊Sauvage";
+        case Faction::Imperiale: return "Imperiale";
+        case Faction::Guilde: return "Guilde";
+        case Faction::Necros: return "Necros";
+        case Faction::Sauvage: return "Sauvage";
     }
     return "Unknown";
 }

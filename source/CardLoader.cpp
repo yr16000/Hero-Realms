@@ -27,6 +27,8 @@
 #include "../include/effets/EffetAssomerChampion.hpp"
 #include "../include/effets/EffetChoix.hpp"
 #include "../include/effets/EffetOptionnel.hpp"
+#include "../include/effets/EffetGainCombatParFaction.hpp"
+
 
 #include <memory>
 #include <vector>
@@ -1471,21 +1473,30 @@ for (int i = 0; i < 2; ++i) {
     // "{Expend}: {Gain 2 combat}
     // +{1 combat} for each other Wild card you have in play."	Champion ◆ Human Priest	Wild	2	4
     for (int i = 0; i < 2; ++i) {
-        std::vector<std::unique_ptr<Effet>> effetsCarte;
-        effetsCarte.push_back(std::make_unique<EffetGainCombat>(2));
-        auto c = std::make_unique<Champion>(
-            "Wolf Shaman",
-            2,
-            Faction::Sauvage,
-            4,
-            false,
-            std::move(effetsCarte),
-            std::vector<std::unique_ptr<Effet>>{},
-            TypeSecondaire::HumainPretre,
-            TypeTertiaire::Aucun
-        );
-        cards.push_back(std::move(c));
-    }
+    std::vector<std::unique_ptr<Effet>> effetsCarte;
+    effetsCarte.push_back(std::make_unique<EffetGainCombat>(2));
+
+    //  bonus par autre carte Sauvage
+    effetsCarte.push_back(std::make_unique<EffetGainCombatParFaction>(
+        1,
+        Faction::Sauvage,
+        false   // on exclut ce Wolf Shaman lui-même, comme dit "other Wild card"
+    ));
+
+    auto c = std::make_unique<Champion>(
+        "Wolf Shaman",
+        2,
+        Faction::Sauvage,
+        4,
+        false,  // pas garde
+        std::move(effetsCarte),
+        std::vector<std::unique_ptr<Effet>>{}, // pas d'effet de faction
+        TypeSecondaire::HumainPretre,
+        TypeTertiaire::Aucun
+    );
+
+    cards.push_back(std::move(c));
+}
 
 return cards;
 }
