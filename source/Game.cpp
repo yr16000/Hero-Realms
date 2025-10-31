@@ -99,6 +99,46 @@ Carte* Game::acheterCarte(int index, Player& acheteur){
     return acheteur.getDefausse().back().get();
 }
 
+Carte* Game::acheterGemmeDeFeu(Player& acheteur){
+    if(gemmesDeFeu.empty()) return nullptr;
+
+    // Simple purchase logic (no global modifiers): check funds, pay, transfer ownership
+    Carte* cartePtr = gemmesDeFeu[0].get();
+    int prix = cartePtr->getCout();
+    if(acheteur.getGold() < prix){
+        std::cout << "Achat impossible : fonds insuffisants pour gemme de feu (cout=" << prix << ", or=" << acheteur.getGold() << ")\n";
+        return nullptr;
+    }
+
+    // debit du joueur
+    acheteur.modiffGold(-prix);
+
+    // take ownership
+    std::unique_ptr<Carte> carte = std::move(gemmesDeFeu[0]);
+    // remove from gemmesDeFeu
+    gemmesDeFeu.erase(gemmesDeFeu.begin());
+
+    // decide destination based on player's flags
+    if(acheteur.getNextAcquiredToHand()){
+        std::cout << "Gemme de feu acquise -> main (flag nextAcquiredToHand).\n";
+        acheteur.getMain().push_back(std::move(carte));
+        acheteur.setNextAcquiredToHand(false);
+        return acheteur.getMain().back().get();
+    }
+
+    if(acheteur.getNextAcquiredToTopDeck()){
+        std::cout << "Gemme de feu acquise -> dessus du deck (flag nextAcquiredToTopDeck).\n";
+        acheteur.getDeck().insert(acheteur.getDeck().begin(), std::move(carte));
+        acheteur.setNextAcquiredToTopDeck(false);
+        return acheteur.getDeck().front().get();
+    }
+
+    // Default: go to defausse
+    std::cout << "Gemme de feu achetee et mise en defausse par defaut.\n";
+    acheteur.getDefausse().push_back(std::move(carte));
+    return acheteur.getDefausse().back().get();
+}
+
 void Game::ajouterCarteMarche(std::unique_ptr<Carte> carte){
     marche.push_back(std::move(carte));
 }
@@ -153,4 +193,8 @@ void Game::initialiserDeckBase() {
     player2.melangerDefausse();
     player1.piocherCarte(5);
     player2.piocherCarte(5);
+}
+
+void Game::initialiserGemmesDeFeu() {
+    gemmesDeFeu = CardLoader::loadFireGems();
 }

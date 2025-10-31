@@ -54,6 +54,15 @@ void Player::acheterCarte(int index, Game& game){
 	std::cout << "Achat reussi: " << carte->getNom() << " (cout=" << carte->getCout() << ")\n";
 }
 
+void Player::acheterGemmeDeFeu(Game& game){
+	Carte* carte = game.acheterGemmeDeFeu(*this);
+	if(!carte){
+		std::cout << "Achat de gemme de feu echoue ou carte inexistante\n";
+		return;
+	}
+	std::cout << "Achat reussi: " << carte->getNom() << " (cout=" << carte->getCout() << ")\n";
+}
+
 void Player::modiffGold(int nb){
 	gold += nb;
 }
@@ -240,6 +249,13 @@ void Player::afficherChampionsEnJeu() const{
 
 void Player::afficherDefausse() const{
 	std::cout << "Defausse du joueur " << id << " (" << defausse.size() << " cartes)\n";
+}
+
+void Player::afficherSacrifices() const{
+	std::cout << "Sacrifices du joueur " << id << " (" << sacrifices.size() << " cartes)\n";
+	for(size_t i=0;i<sacrifices.size();++i){
+		std::cout << i+1 << ". " << sacrifices[i]->getNom() << "\n";
+	}
 }
 
 void Player::afficherStats() const{

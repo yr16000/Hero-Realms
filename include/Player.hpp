@@ -27,6 +27,7 @@ class Player{
         Player(int id);
         void piocherCarte(int nb);
         void acheterCarte(int index, Game& game);
+        void acheterGemmeDeFeu(Game& game);
         void modiffGold(int nb);
         void modiffCombat(int nb);
         void modiffHeal(int nb);
@@ -56,6 +57,7 @@ class Player{
         void afficherMain() const;
         void afficherChampionsEnJeu() const;
         void afficherDefausse() const;
+        void afficherSacrifices() const;
         void afficherStats() const;
         void resetPourNouveauTour();
 };
