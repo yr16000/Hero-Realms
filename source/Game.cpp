@@ -62,6 +62,10 @@ Carte* Game::acheterCarte(int index, Player& acheteur){
     int marcheSize = (int)marche.size();
     int piocheSize = (int)pioche.size();
     int totalAvailable = marcheSize + (godMode ? piocheSize : 0);
+    if(totalAvailable == 0){
+        std::cout << "Achat impossible : marche et pioche vides\n";
+        return nullptr;
+    }
     if (index < 0 || index >= totalAvailable) return nullptr;
 
     bool fromPioche = false;
@@ -140,7 +144,9 @@ Carte* Game::acheterCarte(int index, Player& acheteur){
 }
 
 Carte* Game::acheterGemmeDeFeu(Player& acheteur){
-    if(gemmesDeFeu.empty()) return nullptr;
+    if(gemmesDeFeu.empty()){ 
+        std::cout << "Achat impossible : plus de gemmes de feu disponibles\n";
+        return nullptr;}
 
     // Simple purchase logic (no global modifiers): check funds, pay, transfer ownership
     Carte* cartePtr = gemmesDeFeu[0].get();
