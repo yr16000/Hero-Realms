@@ -209,7 +209,14 @@ void Game::afficherEtatJoueurs() const{
     for(const auto &p : players) p.afficherStats();
 }
 
-bool Game::estTerminee() const{ return false; }
+bool Game::estTerminee() const{ 
+    for(const auto &p : players) {
+        if (!p.estVivant()) {
+            return true;
+        }
+    }
+    return false;
+}
 
 void Game::afficherGagnant() const{
     std::cout << "Aucun gagnant determiner\n";
@@ -246,6 +253,12 @@ void Game::toggleGodMode() {
 
 bool Game::isGodMode() const {
     return godMode;
+}
+
+int Game::getVisibleMarketSize() const {
+    int marcheSize = (int)marche.size();
+    if (godMode) return marcheSize + (int)pioche.size();
+    return marcheSize;
 }
 
 void Game::initialiserMarche() {

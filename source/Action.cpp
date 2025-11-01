@@ -19,6 +19,13 @@ Action::~Action() = default;
 
 void Action::activer(Player& proprietaire, Game& game) {
     std::cout << "Activer action: " << getNom() << "\n";
+    // set activation context so effects can detect the source
+    game.setCarteEnActivation(this);
+    for (const auto& effet : effetCarte) {
+        if (effet) effet->activerEffet(proprietaire, game);
+    }
+    // clear activation context
+    game.setCarteEnActivation(nullptr);
 }
 void Action::onSacrifice(Player& proprietaire, Game& game){
     // when this Action is sacrificed, run its sacrifice effects

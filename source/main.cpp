@@ -5,36 +5,12 @@
 #include "../include/Game.hpp"
 #include "../include/Player.hpp"
 #include "../include/ui/CardRenderer.hpp"
+#include "../include/Champion.hpp"
 
 using namespace std;
 
-// calcule gold/combat total à partir de la main + champions
-// ⚠️ pas de const ici, parce que Player n'a pas de getters const
-static pair<int,int> calculerGoldEtCombat(Player& joueur) {
-    int goldPot = 0;
-    int combatPot = 0;
-
-    auto& main   = joueur.getMain();
-    auto& champs = joueur.getChampionsEnJeu();
-
-    for (auto& c : main) {
-        const string nom = c->getNom();
-        if (nom == "Gold") goldPot += 1;
-        else if (nom == "Ruby") goldPot += 2;
-        else if (nom == "Dagger") combatPot += 1;
-        else if (nom == "Shortsword" || nom == "Short Sword") combatPot += 2;
-        else if (nom == "Fire Gem") goldPot += 2;
-    }
-
-    for (auto& c : champs) {
-        const string nom = c->getNom();
-        if (nom.find("Wolf Shaman") != string::npos) {
-            combatPot += 2;
-        }
-    }
-
-    return {goldPot, combatPot};
-}
+// NOTE: resource aggregation moved to manual play: players must play cards
+// one-by-one to gain gold/combat (previous automatic aggregation removed).
 
 // affiche le petit menu en bas
 static void afficherMenu(const Game& game) {
@@ -42,7 +18,7 @@ static void afficherMenu(const Game& game) {
          << "E(etat)  H(main)  M(marche)  "
          << "C(champions)  CA(champ adv)  "
          << "S(sacrifiées)  A(acheter)  P(jouer)  "
-         << "N(passer)  G(god)  Q(quitter)";
+        << "N(passer)  T(attaquer)  G(god)  Q(quitter)";
     if (game.isGodMode()) cout << "  [GodMode ACTIF]";
     cout << "\n";
 }
@@ -81,6 +57,9 @@ int main() {
     int joueurActif = 0;
     bool quitter = false;
 
+    // initialize first player's turn state
+    joueurs[joueurActif].resetPourNouveauTour();
+
     cout << "=== HERO REALMS - Console ===\n";
     afficherMenu(game);
 
@@ -88,13 +67,9 @@ int main() {
         Player& p   = joueurs[joueurActif];
         Player& adv = joueurs[1 - joueurActif];
 
-        // 1) on calcule les ressources à partir de la main
-        auto [goldPot, combatPot] = calculerGoldEtCombat(p);
-
-        // 2) on les met dans le joueur pour que Game/Player puissent les utiliser
-        p.resetPourNouveauTour();      // remet or/combat internes à 0
-        p.modiffGold(goldPot);         // on met l’or calculé
-        p.modiffCombat(combatPot);     // on met le combat calculé
+    // Resources are now managed by playing cards one-by-one.
+    // The player's turn state (gold/combat/etc.) is reset only when the
+    // turn starts; do not reset here to allow multiple actions in a turn.
 
         // 3) affichage
         cout << "\nJoueur " << (p.getId() + 1)
@@ -138,25 +113,12 @@ int main() {
             if (gemme) {
                 ui::CardRenderer::Options opts;
                 opts.width = 60;
-                cout << "\n(F) Gemme de Feu :\n";
-                cout << ui::CardRenderer::render(*gemme, opts);
+                std::cout << "\n(F) Gemme de Feu :\n";
+                std::cout << ui::CardRenderer::render(*gemme, opts);
             }
-
-            cout << "\nAcheter quelle carte ? (1–5 ou F) : ";
-            string choix;
-            getline(cin, choix);
-            for (auto& c : choix) c = toupper((unsigned char)c);
-
-            if (choix == "F") {
-                p.acheterGemmeDeFeu(game);
-            } else {
-                try {
-                    int index = stoi(choix) - 1;
-                    game.acheterCarte(index, p);
-                } catch (...) {
-                    cout << "Entrée invalide.\n";
-                }
-            }
+            // Delegate full interactive purchase flow to Player::acheterCarte
+            // which uses getline and respects GodMode-visible market size.
+            p.acheterCarte(game);
         }
         else if (cmd == "P") {
             auto& main = p.getMain();
@@ -184,9 +146,54 @@ int main() {
             else
                 cout << "GodMode désactivé.\n";
         }
+        else if (cmd == "T") {
+            // Attack: choose target (player or one of opponent's champions)
+            auto& advChamps = adv.getChampionsEnJeu();
+            if (advChamps.empty()) {
+                cout << "Aucun champion adverse. Attaque directe sur le joueur.\n";
+                p.attaquer(adv, nullptr);
+            } else {
+                cout << "Choisissez cible : (P) Joueur ou numéro du champion adverse :\n";
+                for (size_t i = 0; i < advChamps.size(); ++i) {
+                    // show index, name, and (if available) hp via dynamic cast
+                    std::cout << i + 1 << ") " << advChamps[i]->getNom();
+                    Champion* ch = dynamic_cast<Champion*>(advChamps[i].get());
+                    if (ch) std::cout << " (PV=" << ch->getPv() << ")";
+                    std::cout << "\n";
+                }
+                cout << "> ";
+                string choice;
+                getline(cin, choice);
+                if (choice.empty()) {
+                    cout << "Attaque annulée.\n";
+                } else {
+                    for (auto &c : choice) c = toupper((unsigned char)c);
+                    if (choice == "P") {
+                        p.attaquer(adv, nullptr);
+                    } else {
+                        try {
+                            int idx = stoi(choice) - 1;
+                            if (idx < 0 || static_cast<size_t>(idx) >= advChamps.size()) {
+                                cout << "Index de champion invalide.\n";
+                            } else {
+                                Champion* cible = dynamic_cast<Champion*>(advChamps[idx].get());
+                                if (!cible) {
+                                    cout << "La carte choisie n'est pas un champion.\n";
+                                } else {
+                                    p.attaquer(adv, cible);
+                                }
+                            }
+                        } catch (...) {
+                            cout << "Entrée invalide.\n";
+                        }
+                    }
+                }
+            }
+        }
         else if (cmd == "N") {
-            p.resetPourNouveauTour();
+            // end current player's turn and start the other player's turn
             joueurActif = 1 - joueurActif;
+            joueurs[joueurActif].resetPourNouveauTour();
             cout << "→ Tour du joueur " << (joueurActif + 1) << "\n";
         }
         else {

@@ -3,6 +3,7 @@
 #include "Carte.hpp"
 #include <vector>
 #include "Effet.hpp"
+#include "Game.hpp"
 
 class Action : public Carte{
     private:

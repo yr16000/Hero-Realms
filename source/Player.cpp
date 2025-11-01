@@ -42,9 +42,33 @@ void Player::melangerDefausse(){
 }
 
 void Player::acheterCarte(Game& game){
-	int index = 0;
-	std::cout << "Entrez l'index de la carte à acheter: ";
-	std::cin >> index;
+	// Let the player choose an index or 'F' to buy a Fire Gem. Use getline to
+	// avoid mixing operator>> with getline in the main loop.
+	int visible = game.getVisibleMarketSize();
+	std::cout << "Entrez l'index de la carte à acheter (1-" << visible << ") ou F pour gemme de feu: ";
+	std::string line;
+	std::getline(std::cin, line);
+	if(line.empty()){
+		std::cout << "Achat annulé (entrée vide).\n";
+		return;
+	}
+	for (auto &ch : line) ch = (char)std::toupper((unsigned char)ch);
+	if(line == "F"){
+		// delegate to gem purchase helper which prints result
+		acheterGemmeDeFeu(game);
+		return;
+	}
+
+	int inputIndex = 0;
+	try {
+		inputIndex = std::stoi(line);
+	} catch(...) {
+		std::cout << "Entrée invalide.\n";
+		return;
+	}
+	// convert to zero-based
+	int index = inputIndex - 1;
+
 	// Ask the game to perform the purchase; Game will transfer ownership into
 	// the appropriate player container and return a pointer to the acquired card.
 	Carte* carte = game.acheterCarte(index, *this);
@@ -85,11 +109,13 @@ void Player::soigner(int nb){
 
 void Player::attaquer(Player& cible, Champion* carte){
 	bool attaqueBloquee = false;
+	int indexDefenseurGarde = -1;
 	// Check if any defending champions block the attack
-	for(auto &defenseur : cible.getChampionsEnJeu()){
-		Champion* champ = dynamic_cast<Champion*>(defenseur.get());
+	for(size_t i = 0; i < cible.getChampionsEnJeu().size(); ++i){
+		Champion* champ = dynamic_cast<Champion*>(cible.getChampionsEnJeu()[i].get());
 		if(champ && champ->getEstGarde()){
 			attaqueBloquee = true;
+			indexDefenseurGarde = static_cast<int>(i);
 			break;
 		}
 
@@ -105,7 +131,11 @@ void Player::attaquer(Player& cible, Champion* carte){
 					return;
 				}
 				combat -= champAtt->getPv();
-				champAtt->subirDegat(champAtt->getPv());
+				// Move the defending champion's unique_ptr into the defender's defausse
+				if(indexDefenseurGarde >= 0){
+					cible.getDefausse().push_back(std::move(cible.getChampionsEnJeu()[indexDefenseurGarde]));
+					cible.getChampionsEnJeu().erase(cible.getChampionsEnJeu().begin() + indexDefenseurGarde);
+				}
 			} else {
 				std::cout << "Attaque bloquée par un champion garde. Choisissez un champion garde pour attaquer.\n";
 				return;
@@ -124,7 +154,8 @@ void Player::attaquer(Player& cible, Champion* carte){
 					return;
 				}
 			combat -= champAtt->getPv();
-			champAtt->subirDegat(champAtt->getPv());
+			cible.getDefausse().push_back(std::move(cible.getChampionsEnJeu()[indexDefenseurGarde]));
+			cible.getChampionsEnJeu().erase(cible.getChampionsEnJeu().begin() + indexDefenseurGarde);
 		}
 		cible.subirDegat(combat);
 		combat = 0;
@@ -158,8 +189,12 @@ void Player::jouerCarte(int index, Game& game){
 				// put it into play or to put it into play and activate it immediately.
 				std::cout << "Vous jouez un champion: " << c->getNom() << "\n";
 				std::cout << "1) Mettre en jeu seulement\n2) Mettre en jeu et activer maintenant\nChoix (1/2): ";
+				std::string tmp;
+				std::getline(std::cin, tmp);
 				int choix = 1;
-				if(!(std::cin >> choix)) choix = 1;
+				if(!tmp.empty()){
+					try{ choix = std::stoi(tmp); } catch(...) { choix = 1; }
+				}
 				// Place champion into play
 				championsEnJeu.push_back(std::move(c));
 				if(choix == 2){
@@ -174,8 +209,12 @@ void Player::jouerCarte(int index, Game& game){
 			defausse.push_back(std::move(c));
 			break;
 		case TypeCarte::Objet:
-			// put into play (treat like champion for now)
-			defausse.push_back(std::move(c));
+			// For objects: activate immediately (they may grant gold/combat/effects)
+			// then send to defausse by default.
+			{
+				c->activer(*this, game);
+				defausse.push_back(std::move(c));
+			}
 			break;
 		default:
 			defausse.push_back(std::move(c));
@@ -272,4 +311,10 @@ void Player::resetPourNouveauTour(){
 	nextAcquiredToHand = false;
 	nextAcquiredToTopDeck = false;
 	nextAcquiredActionToTopDeck = false;
+	for(auto &c : championsEnJeu){
+		Champion* champ = dynamic_cast<Champion*>(c.get());
+		if(champ){
+			champ->setEstActiver(false);
+		}
+	}
 }

@@ -36,6 +36,8 @@ class Game{
         void setGodMode(bool val);
         void toggleGodMode();
         bool isGodMode() const;
+    // number of visible purchase options (marche + pioche if godMode)
+    int getVisibleMarketSize() const;
         // Activation context helpers
         void setCarteEnActivation(Carte* c);
         Carte* getCarteEnActivation() const;
