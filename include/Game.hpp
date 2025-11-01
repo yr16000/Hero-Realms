@@ -39,6 +39,8 @@ class Game{
         // Activation context helpers
         void setCarteEnActivation(Carte* c);
         Carte* getCarteEnActivation() const;
+        const Carte* getModeleGemmeDeFeu() const;
+ 
 
 };
 

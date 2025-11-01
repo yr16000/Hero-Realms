@@ -1509,16 +1509,24 @@ std::vector<std::unique_ptr<Carte>> CardLoader::loadFireGems(int count) {
     fireGems.reserve(count);
 
     for (int i = 0; i < count; ++i) {
-        // effets de sacrifice uniquement
+        // 1) effets quand on joue la Fire Gem
+        std::vector<std::unique_ptr<Effet>> effetsCarte;
+        effetsCarte.push_back(std::make_unique<EffetGainGold>(2));   // {Gain 2 gold}
+
+        // 2) pas d’effets de faction
+        std::vector<std::unique_ptr<Effet>> effetsFaction;
+
+        // 3) effets de sacrifice
         std::vector<std::unique_ptr<Effet>> effetsSacrifice;
-        effetsSacrifice.push_back(std::make_unique<EffetGainCombat>(3));
+        effetsSacrifice.push_back(std::make_unique<EffetGainCombat>(3)); // {Sacrifice}: Gain 3 combat
 
         fireGems.push_back(std::make_unique<Objet>(
             "Fire Gem",
-            2,                  // coût
-            2,                  // gainGold quand on la joue
-            0,                  // gainCombat quand on la joue
-            std::move(effetsSacrifice),
+            2,                            // coût
+            Faction::Aucun,               // pas de faction
+            std::move(effetsCarte),       // effets normaux
+            std::move(effetsFaction),     // effets de faction
+            std::move(effetsSacrifice),   // effets de sacrifice
             TypeSecondaire::Monnaie,
             TypeTertiaire::Gemme
         ));
@@ -1527,60 +1535,72 @@ std::vector<std::unique_ptr<Carte>> CardLoader::loadFireGems(int count) {
     return fireGems;
 }
 
-// Chargement du deck de départ personnel
 std::vector<std::unique_ptr<Carte>> CardLoader::loadPersonalDeck() {
     std::vector<std::unique_ptr<Carte>> deck;
 
-    // 7 Gold
+    // 7 Gold : {Gain 1 gold}
     for (int i = 0; i < 7; ++i) {
+        std::vector<std::unique_ptr<Effet>> effetsCarte;
+        effetsCarte.push_back(std::make_unique<EffetGainGold>(1));
+
         deck.push_back(std::make_unique<Objet>(
             "Gold",
-            0,                                  // coût
-            1,                                  // gainGold
-            0,                                  // gainCombat
-            std::vector<std::unique_ptr<Effet>>{},  // pas d’effet de sacrifice
+            0,
+            Faction::Aucun,
+            std::move(effetsCarte),
+            std::vector<std::unique_ptr<Effet>>{},   // pas d’effet de faction
+            std::vector<std::unique_ptr<Effet>>{},   // pas de sacrifice
             TypeSecondaire::Monnaie,
             TypeTertiaire::Piece
         ));
     }
 
-    // 1 Shortsword
+    // 1 Shortsword : {Gain 2 combat}
     {
-        std::vector<std::unique_ptr<Effet>> effetsSacrifice; // vide
+        std::vector<std::unique_ptr<Effet>> effetsCarte;
+        effetsCarte.push_back(std::make_unique<EffetGainCombat>(2));
+
         deck.push_back(std::make_unique<Objet>(
             "Shortsword",
             0,
-            0,      // or
-            2,      // combat
-            std::move(effetsSacrifice),
+            Faction::Aucun,
+            std::move(effetsCarte),
+            std::vector<std::unique_ptr<Effet>>{},
+            std::vector<std::unique_ptr<Effet>>{},
             TypeSecondaire::ArmeDeMelee,
             TypeTertiaire::Epee
         ));
     }
 
-    // 1 Dagger
+    // 1 Dagger : {Gain 1 combat}
     {
-        std::vector<std::unique_ptr<Effet>> effetsSacrifice;
+        std::vector<std::unique_ptr<Effet>> effetsCarte;
+        effetsCarte.push_back(std::make_unique<EffetGainCombat>(1));
+
         deck.push_back(std::make_unique<Objet>(
             "Dagger",
             0,
-            0,
-            1,
-            std::move(effetsSacrifice),
+            Faction::Aucun,
+            std::move(effetsCarte),
+            std::vector<std::unique_ptr<Effet>>{},
+            std::vector<std::unique_ptr<Effet>>{},
             TypeSecondaire::ArmeDeMelee,
             TypeTertiaire::Dague
         ));
     }
 
-    // 1 Ruby
+    // 1 Ruby : {Gain 2 gold}
     {
-        std::vector<std::unique_ptr<Effet>> effetsSacrifice;
+        std::vector<std::unique_ptr<Effet>> effetsCarte;
+        effetsCarte.push_back(std::make_unique<EffetGainGold>(2));
+
         deck.push_back(std::make_unique<Objet>(
             "Ruby",
             0,
-            2,
-            0,
-            std::move(effetsSacrifice),
+            Faction::Aucun,
+            std::move(effetsCarte),
+            std::vector<std::unique_ptr<Effet>>{},
+            std::vector<std::unique_ptr<Effet>>{},
             TypeSecondaire::Monnaie,
             TypeTertiaire::Gemme
         ));

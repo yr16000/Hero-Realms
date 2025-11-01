@@ -250,6 +250,8 @@ void Game::initialiserMarche() {
     }
 }
 
+
+
 void Game::initialiserDeckBase() {
     Player& player1 = players[0];
     Player& player2 = players[1];
@@ -267,6 +269,13 @@ void Game::initialiserDeckBase() {
     player2.melangerDefausse();
     player1.piocherCarte(5);
     player2.piocherCarte(5);
+}
+
+const Carte* Game::getModeleGemmeDeFeu() const {
+    if (!gemmesDeFeu.empty()) {
+        return gemmesDeFeu.front().get(); // retourne la première de la pile
+    }
+    return nullptr;
 }
 
 void Game::initialiserGemmesDeFeu() {
