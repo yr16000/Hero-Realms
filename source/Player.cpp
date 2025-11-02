@@ -317,4 +317,9 @@ void Player::resetPourNouveauTour(){
 			champ->setEstActiver(false);
 		}
 	}
+	for(auto &c:main){
+		defausse.push_back(std::move(c));
+	}
+	main.clear();
+	piocherCarte(5);
 }
