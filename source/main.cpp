@@ -16,7 +16,7 @@ using namespace std;
 static void afficherMenu(const Game& game) {
     cout << "\nCommandes : "
          << "E(etat)  H(main)  M(marche)  "
-         << "C(champions)  CA(champ adv)  "
+         << "C(champions)  AC(activer champion)  CA(champ adv)  "
          << "S(sacrifiées)  A(acheter)  P(jouer)  "
         << "N(passer)  T(attaquer)  G(god)  Q(quitter)";
     if (game.isGodMode()) cout << "  [GodMode ACTIF]";
@@ -186,6 +186,43 @@ int main() {
                         } catch (...) {
                             cout << "Entrée invalide.\n";
                         }
+                    }
+                }
+            }
+        }
+        else if (cmd == "AC") {
+            // Activate one of your champions in play
+            auto& champs = p.getChampionsEnJeu();
+            if (champs.empty()) {
+                cout << "Vous n'avez aucun champion en jeu.\n";
+            } else {
+                cout << "Choisissez le champion à activer :\n";
+                for (size_t i = 0; i < champs.size(); ++i) {
+                    Champion* ch = dynamic_cast<Champion*>(champs[i].get());
+                    cout << i + 1 << ") " << champs[i]->getNom();
+                    if (ch && ch->getEstActiver()) cout << " (déjà activé)";
+                    cout << "\n";
+                }
+                cout << "> ";
+                string s;
+                getline(cin, s);
+                if (!s.empty()) {
+                    try {
+                        int idx = stoi(s) - 1;
+                        if (idx < 0 || static_cast<size_t>(idx) >= champs.size()) {
+                            cout << "Index invalide.\n";
+                        } else {
+                            Champion* cible = dynamic_cast<Champion*>(champs[idx].get());
+                            if (!cible) {
+                                cout << "Carte sélectionnée n'est pas un champion.\n";
+                            } else if (cible->getEstActiver()) {
+                                cout << "Ce champion est déjà activé ce tour.\n";
+                            } else {
+                                cible->activer(p, game);
+                            }
+                        }
+                    } catch (...) {
+                        cout << "Entrée invalide.\n";
                     }
                 }
             }

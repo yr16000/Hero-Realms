@@ -13,6 +13,11 @@ Champion::Champion(const std::string& nom, int cout, const Faction faction,
       pv(pv), estGarde(estGarde) {}
 
 void Champion::activer(Player& proprietaire, Game& game) {
+    // If this champion is already activated for this turn, do nothing.
+    if (getEstActiver()) {
+        std::cout << "Champion deja activé: " << getNom() << "\n";
+        return;
+    }
     // Ensure this champion is in the owner's championsEnJeu (in play).
     bool inPlay = false;
     for (const auto &ptr : proprietaire.getChampionsEnJeu()){
