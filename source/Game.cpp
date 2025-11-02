@@ -109,6 +109,7 @@ Carte* Game::acheterCarte(int index, Player& acheteur){
     }
 
     Carte* cartePtr = carteUptr.get();
+    acheteur.incrFactionCount(cartePtr->getFaction());
 
     // decide destination based on godMode or player's flags and card type
     if (godMode) {

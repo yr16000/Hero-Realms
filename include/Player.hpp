@@ -4,6 +4,7 @@
 #include <memory>
 #include "Carte.hpp"
 #include <iostream>
+#include <unordered_map>
 // forward declaration to avoid circular include
 class Game;
 class Champion;
@@ -23,6 +24,10 @@ class Player{
         std::vector<std::unique_ptr<Carte>> deck;
         std::vector<std::unique_ptr<Carte>> defausse;
         std::vector<std::unique_ptr<Carte>> sacrifices;
+    // counts of cards per faction measured at the start of the turn
+    // counts of cards (by faction) that have been played during the current turn
+    // this includes Actions and Objects that were played (and moved to defausse)
+        std::unordered_map<Faction,int> factionCount;
     public:
         Player(int id);
         void piocherCarte(int nb);
@@ -60,6 +65,9 @@ class Player{
         void afficherSacrifices() const;
         void afficherStats() const;
         void resetPourNouveauTour();
+    // faction counts computed at start of turn (hand + champions in play)
+    int getFactionCount(Faction f) const;
+    void incrFactionCount(Faction f);
 };
 
 

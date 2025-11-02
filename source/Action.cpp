@@ -24,8 +24,17 @@ void Action::activer(Player& proprietaire, Game& game) {
     for (const auto& effet : effetCarte) {
         if (effet) effet->activerEffet(proprietaire, game);
     }
+
     // clear activation context
     game.setCarteEnActivation(nullptr);
+
+    int countAtStart = proprietaire.getFactionCount(this->getFaction());
+    const int threshold = 2;
+    if (countAtStart >= threshold) {
+        for(const auto& effetFaction : effetFaction) {
+            effetFaction->activerEffet(proprietaire, game);
+        }
+    }
 }
 void Action::onSacrifice(Player& proprietaire, Game& game){
     // when this Action is sacrificed, run its sacrifice effects

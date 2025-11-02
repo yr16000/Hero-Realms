@@ -41,13 +41,12 @@ void Champion::activer(Player& proprietaire, Game& game) {
     // Clear activation context
     game.setCarteEnActivation(nullptr);
 
-    // Trigger faction effects if owner has a card of the same faction in hand
-    for (const auto &carte : proprietaire.getMain()){
-        if (carte->getFaction() == this->getFaction()) {
-            for(const auto& effetFaction : effetFaction) {
-                effetFaction->activerEffet(proprietaire, game);
-            }
-            break;
+
+    int countAtStart = proprietaire.getFactionCount(this->getFaction());
+    const int threshold = 2;
+    if (countAtStart >= threshold) {
+        for(const auto& effetFaction : effetFaction) {
+            effetFaction->activerEffet(proprietaire, game);
         }
     }
 

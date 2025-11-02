@@ -41,6 +41,16 @@ void Player::melangerDefausse(){
 	std::shuffle(defausse.begin(), defausse.end(), rng);
 }
 
+void Player::incrFactionCount(Faction f){
+	factionCount[f] += 1;
+}
+
+int Player::getFactionCount(Faction f) const{
+	auto it = factionCount.find(f);
+	if(it == factionCount.end()) return 0;
+	return it->second;
+}
+
 void Player::acheterCarte(Game& game){
 	// Let the player choose an index or 'F' to buy a Fire Gem. Use getline to
 	// avoid mixing operator>> with getline in the main loop.
@@ -206,6 +216,7 @@ void Player::jouerCarte(int index, Game& game){
 		case TypeCarte::Action:
 			// activate then send to defausse
 			c->activer(*this, game);
+			// record that an Action of this faction was played this turn
 			defausse.push_back(std::move(c));
 			break;
 		case TypeCarte::Objet:
@@ -322,4 +333,16 @@ void Player::resetPourNouveauTour(){
 	}
 	main.clear();
 	piocherCarte(5);
+
+	// compute faction counts at the start of the turn: include cards in
+	// hand and champions currently in play so that faction effects can
+	// be triggered even when the first card of the faction is played.
+	factionCount.clear();
+	for (const auto &carte : main) {
+		factionCount[carte->getFaction()] += 1;
+	}
+	for (const auto &c : championsEnJeu) {
+		factionCount[c->getFaction()] += 1;
+	}
+
 }
