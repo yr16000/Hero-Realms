@@ -1,7 +1,4 @@
 #pragma once
-#ifndef CARD_RENDERER_HPP
-#define CARD_RENDERER_HPP
-
 #include <string>
 #include <vector>        
 #include "../Carte.hpp"
