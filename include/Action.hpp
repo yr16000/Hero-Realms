@@ -19,6 +19,7 @@ class Action : public Carte{
         ~Action();
         void activer(Player& proprietaire, Game& game) override;
         void onSacrifice(Player& proprietaire, Game& game) override;
+        const std::vector<std::unique_ptr<Effet>>& getEffetsSacrifice() const;
 
 };
 

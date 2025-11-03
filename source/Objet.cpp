@@ -29,9 +29,15 @@ void Objet::activer(Player& proprietaire, Game& game) {
     game.setCarteEnActivation(nullptr);
 }
 
+const std::vector<std::unique_ptr<Effet>>& Objet::getEffetsSacrifice() const {
+    return effetsSacrifice;
+}
+
 void Objet::onSacrifice(Player& proprietaire, Game& game) {
     std::cout << "Sacrifice de l'objet : " << getNom() << "\n";
     for (const auto& effet : effetsSacrifice) {
         if (effet) effet->activerEffet(proprietaire, game);
     }
+
+
 }

@@ -1,28 +1,8 @@
 #include <iostream>
 #include <string>
-#include <cctype>
-
 #include "../include/Game.hpp"
 #include "../include/Player.hpp"
-#include "../include/ui/CardRenderer.hpp"
-#include "../include/Champion.hpp"
-
-using namespace std;
-
-// NOTE: resource aggregation moved to manual play: players must play cards
-// one-by-one to gain gold/combat (previous automatic aggregation removed).
-
-// affiche le petit menu en bas
-static void afficherMenu(const Game& game) {
-    cout << "\nCommandes : "
-         << "E(etat)  H(main)  M(marche)  "
-         << "C(champions)  AC(activer champion)  CA(champ adv)  "
-         << "S(sacrifiées)  A(acheter)  P(jouer)  "
-        << "N(passer)  T(attaquer)  G(god)  Q(quitter)";
-    if (game.isGodMode()) cout << "  [GodMode ACTIF]";
-    cout << "\n";
-}
-
+#include "../include/ui/Console.hpp"
 
 int main() {
     Game game;
@@ -32,190 +12,67 @@ int main() {
     int joueurActif = 0;
     bool quitter = false;
 
-    // initialize first player's turn state
+    // Init tour du joueur 1
     joueurs[joueurActif].resetPourNouveauTour();
 
-    cout << "=== HERO REALMS - Console ===\n";
-    afficherMenu(game);
-
     while (!quitter && !game.estTerminee()) {
+        // 🔹 Nettoyage clair du terminal avant chaque tour
+    #ifdef _WIN32
+        system("cls");
+    #else
+        system("clear");
+    #endif
+
         Player& p   = joueurs[joueurActif];
         Player& adv = joueurs[1 - joueurActif];
 
-    // Resources are now managed by playing cards one-by-one.
-    // The player's turn state (gold/combat/etc.) is reset only when the
-    // turn starts; do not reset here to allow multiple actions in a turn.
+        // 🔹 En-tête + menu (PAS de plateau auto au lancement)
+        ui::Console::afficherHeader(game, p, adv);
+        ui::Console::afficherMenu(game);
 
-        // 3) affichage
-        cout << "\nJoueur " << (p.getId() + 1)
-             << " | PV: " << p.getHp()
-             << " | Or: " << p.getGold()
-             << " | Combat: " << p.getAtk()
-             << "\nAdversaire (J" << (adv.getId() + 1)
-             << ") | PV: " << adv.getHp()
-             << "\n> ";
+        int choix = ui::Console::lireChoix("> Choix", 0, 8);  // 0=Quitter visible
+        switch (choix) {
+            case 0: // Quitter
+                quitter = true; 
+                break;
 
-        string cmd;
-        getline(cin, cmd);
-        if (cmd.empty()) continue;
-        for (auto& c : cmd) c = toupper((unsigned char)c);
+            case 1: // Jouer
+                ui::Console::jouerUneCarte(p, game);
+                break;
 
-        if (cmd == "Q") {
-            quitter = true;
-        }
-        else if (cmd == "E") {
-            game.afficherEtatJoueurs();
-        }
-        else if (cmd == "H") {
-            p.afficherMainDetaillee();
-        }
-        else if (cmd == "M") {
-            game.afficherMarche();
-        }
-        else if (cmd == "C") {
-            p.afficherChampionsEnJeu();
-        }
-        else if (cmd == "CA") {
-            adv.afficherChampionsEnJeu();
-        }
-        else if (cmd == "S") {
-            p.afficherSacrifices();
-        }
-        else if (cmd == "A") {
-            game.afficherMarche();
+            case 2: // Activer champion
+                ui::Console::activerUnChampion(p, game);
+                break;
 
-            const Carte* gemme = game.getModeleGemmeDeFeu();
-            if (gemme) {
-                ui::CardRenderer::Options opts;
-                opts.width = 60;
-                std::cout << "\n(F) Gemme de Feu :\n";
-                std::cout << ui::CardRenderer::render(*gemme, opts);
+            case 3: // Voir sacrifices
+                ui::Console::voirSacrifices(p, game);
+                break;
+
+            case 4: // Acheter
+                ui::Console::acheterAuMarche(p, game);
+                break;
+
+            case 5: // Attaquer
+                ui::Console::attaquer(p, adv, game);
+                break;
+
+            case 6: { // ➡️ Terminer le tour → bascule immédiate + redraw pour le suivant
+                joueurActif = 1 - joueurActif;
+                joueurs[joueurActif].resetPourNouveauTour();
+                continue; // repart du début → clear + header du nouveau joueur
             }
-            // Delegate full interactive purchase flow to Player::acheterCarte
-            // which uses getline and respects GodMode-visible market size.
-            p.acheterCarte(game);
-        }
-        else if (cmd == "P") {
-            auto& main = p.getMain();
-            if (main.empty()) {
-                cout << "Vous n'avez aucune carte à jouer.\n";
-            } else {
-                p.afficherMainDetaillee();
-                cout << "Quelle carte jouer ? : ";
-                string s;
-                getline(cin, s);
-                if (!s.empty()) {
-                    try {
-                        int idx = stoi(s);
-                        p.jouerCarte(idx, game);
-                    } catch (...) {
-                        cout << "Entrée invalide.\n";
-                    }
-                }
-            }
-        }
-        else if (cmd == "G") {
-            game.toggleGodMode();
-            if (game.isGodMode())
-                cout << "GodMode activé. Achats gratuits + pioche visible. Tapez G encore pour désactiver.\n";
-            else
-                cout << "GodMode désactivé.\n";
-        }
-        else if (cmd == "T") {
-            // Attack: choose target (player or one of opponent's champions)
-            auto& advChamps = adv.getChampionsEnJeu();
-            if (advChamps.empty()) {
-                cout << "Aucun champion adverse. Attaque directe sur le joueur.\n";
-                p.attaquer(adv, nullptr);
-            } else {
-                cout << "Choisissez cible : (P) Joueur ou numéro du champion adverse :\n";
-                for (size_t i = 0; i < advChamps.size(); ++i) {
-                    // show index, name, and (if available) hp via dynamic cast
-                    std::cout << i + 1 << ") " << advChamps[i]->getNom();
-                    Champion* ch = dynamic_cast<Champion*>(advChamps[i].get());
-                    if (ch) std::cout << " (PV=" << ch->getPv() << ")";
-                    std::cout << "\n";
-                }
-                cout << "> ";
-                string choice;
-                getline(cin, choice);
-                if (choice.empty()) {
-                    cout << "Attaque annulée.\n";
-                } else {
-                    for (auto &c : choice) c = toupper((unsigned char)c);
-                    if (choice == "P") {
-                        p.attaquer(adv, nullptr);
-                    } else {
-                        try {
-                            int idx = stoi(choice) - 1;
-                            if (idx < 0 || static_cast<size_t>(idx) >= advChamps.size()) {
-                                cout << "Index de champion invalide.\n";
-                            } else {
-                                Champion* cible = dynamic_cast<Champion*>(advChamps[idx].get());
-                                if (!cible) {
-                                    cout << "La carte choisie n'est pas un champion.\n";
-                                } else {
-                                    p.attaquer(adv, cible);
-                                }
-                            }
-                        } catch (...) {
-                            cout << "Entrée invalide.\n";
-                        }
-                    }
-                }
-            }
-        }
-        else if (cmd == "AC") {
-            // Activate one of your champions in play
-            auto& champs = p.getChampionsEnJeu();
-            if (champs.empty()) {
-                cout << "Vous n'avez aucun champion en jeu.\n";
-            } else {
-                cout << "Choisissez le champion à activer :\n";
-                for (size_t i = 0; i < champs.size(); ++i) {
-                    Champion* ch = dynamic_cast<Champion*>(champs[i].get());
-                    cout << i + 1 << ") " << champs[i]->getNom();
-                    if (ch && ch->getEstActiver()) cout << " (déjà activé)";
-                    cout << "\n";
-                }
-                cout << "> ";
-                string s;
-                getline(cin, s);
-                if (!s.empty()) {
-                    try {
-                        int idx = stoi(s) - 1;
-                        if (idx < 0 || static_cast<size_t>(idx) >= champs.size()) {
-                            cout << "Index invalide.\n";
-                        } else {
-                            Champion* cible = dynamic_cast<Champion*>(champs[idx].get());
-                            if (!cible) {
-                                cout << "Carte sélectionnée n'est pas un champion.\n";
-                            } else if (cible->getEstActiver()) {
-                                cout << "Ce champion est déjà activé ce tour.\n";
-                            } else {
-                                cible->activer(p, game);
-                            }
-                        }
-                    } catch (...) {
-                        cout << "Entrée invalide.\n";
-                    }
-                }
-            }
-        }
-        else if (cmd == "N") {
-            // end current player's turn and start the other player's turn
-            joueurs[joueurActif].resetPourNouveauTour();
-            joueurActif = 1 - joueurActif;
-            cout << "→ Tour du joueur " << (joueurActif + 1) << "\n";
-        }
-        else {
-            cout << "Commande inconnue.\n";
-        }
 
-        afficherMenu(game);
+            case 7: // 📋 Voir le plateau (affiche tout + pause)
+                ui::Console::afficherPlateau(game, p, adv, /*pauseApres=*/true);
+                break;
+
+            case 8: // 🔮 God Mode
+                game.toggleGodMode();
+                break;
+        }
     }
 
-    cout << "\nPartie terminée !\n";
+    std::cout << "\nPartie terminée !\n";
     game.afficherGagnant();
     return 0;
 }

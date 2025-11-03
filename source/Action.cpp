@@ -36,6 +36,11 @@ void Action::activer(Player& proprietaire, Game& game) {
         }
     }
 }
+
+const std::vector<std::unique_ptr<Effet>>& Action::getEffetsSacrifice() const {
+    return effetSacrifice;
+}
+
 void Action::onSacrifice(Player& proprietaire, Game& game){
     // when this Action is sacrificed, run its sacrifice effects
     for (const auto &e : effetSacrifice) {

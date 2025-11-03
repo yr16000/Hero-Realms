@@ -5,6 +5,8 @@
 #include <iomanip>
 
 #include "../../include/Champion.hpp"
+#include "../../include/Action.hpp"
+#include "../../include/Objet.hpp"
 #include "../../include/Enums.h"
 
 using namespace ui;
@@ -41,8 +43,8 @@ std::vector<std::string> CardRenderer::wrapText(const std::string& text, int max
         } else {
             if (!line.empty()) res.push_back(line);
             if ((int)word.size() > maxWidth) {
-                for (size_t i = 0; i < word.size(); i += maxWidth)
-                    res.push_back(word.substr(i, maxWidth));
+                for (size_t i = 0; i < word.size(); i += (size_t)maxWidth)
+                    res.push_back(word.substr(i, (size_t)maxWidth));
                 line.clear();
             } else {
                 line = word;
@@ -79,29 +81,24 @@ std::string CardRenderer::render(const Carte& carte, const Options& opts) {
     }
 
     // afficher types secondaire / tertiaire seulement s'ils existent
-{
-    // il faut que ta classe Carte ait bien ces getters :
-    // getTypeSecondaire() et getTypeTertiaire()
     {
-    auto ts = carte.getTypeSecondaire();
-    auto tt = carte.getTypeTertiaire();
+        auto ts = carte.getTypeSecondaire();
+        auto tt = carte.getTypeTertiaire();
 
-    if (ts != TypeSecondaire::Aucun) {
-        std::ostringstream l2;
-        l2 << " Type secondaire : " << to_string(ts);
-        writeContentLine(out, l2.str(), inner);
+        if (ts != TypeSecondaire::Aucun) {
+            std::ostringstream l2;
+            l2 << " Type secondaire : " << to_string(ts);
+            writeContentLine(out, l2.str(), inner);
+        }
+
+        if (tt != TypeTertiaire::Aucun) {
+            std::ostringstream l3;
+            l3 << " Type tertiaire  : " << to_string(tt);
+            writeContentLine(out, l3.str(), inner);
+        }
     }
 
-    if (tt != TypeTertiaire::Aucun) {
-        std::ostringstream l3;
-        l3 << " Type tertiaire  : " << to_string(tt);
-        writeContentLine(out, l3.str(), inner);
-    }
-}
-
-}
-
-    // 4. ligne PV/Garde pour Champion
+    // 4. ligne PV/Garde pour Champion (ou ligne vide sinon)
     if (carte.getType() == TypeCarte::Champion) {
         if (auto champ = dynamic_cast<const Champion*>(&carte)) {
             std::ostringstream line;
@@ -138,7 +135,57 @@ std::string CardRenderer::render(const Carte& carte, const Options& opts) {
         }
     }
 
-    // 7. Effets de faction
+    // 7. Effets de sacrifice (Action / Objet uniquement, section séparée)
+    // 7. Effets de sacrifice (Action / Objet uniquement, section séparée)
+
+// --- Action ---
+if (carte.getType() == TypeCarte::Action) {
+    if (auto action = dynamic_cast<const Action*>(&carte)) {
+        const auto& sac = action->getEffetsSacrifice(); 
+        if (!sac.empty()) {
+            writeContentLine(out, "", inner);
+            writeContentLine(out, " Effets de sacrifice :", inner);
+
+            for (const auto& eff : sac) {
+                const Effet* e = eff.get();    
+                if (!e) continue;
+                auto txt = e->toString();
+                auto wrapped = wrapText(txt, textWidth - 3);
+                bool first = true;
+                for (auto& w : wrapped) {
+                    std::string line = (first ? "  - " : "    ") + w;
+                    writeContentLine(out, line, inner);
+                    first = false;
+                }
+            }
+        }
+    }
+}
+// --- Objet ---
+else if (carte.getType() == TypeCarte::Objet) {
+    if (auto obj = dynamic_cast<const Objet*>(&carte)) {
+        const auto& sac = obj->getEffetsSacrifice(); 
+        if (!sac.empty()) {
+            writeContentLine(out, "", inner);
+            writeContentLine(out, " Effets de sacrifice :", inner);
+
+            for (const auto& eff : sac) {
+                const Effet* e = eff.get();       
+                if (!e) continue;
+                auto txt = e->toString();
+                auto wrapped = wrapText(txt, textWidth - 3);
+                bool first = true;
+                for (auto& w : wrapped) {
+                    std::string line = (first ? "  - " : "    ") + w;
+                    writeContentLine(out, line, inner);
+                    first = false;
+                }
+            }
+        }
+    }
+}
+
+    // 8. Effets de faction
     if (!carte.getEffetsFaction().empty()) {
         writeContentLine(out, "", inner);
         writeContentLine(out, " Effets de faction :", inner);
@@ -156,7 +203,7 @@ std::string CardRenderer::render(const Carte& carte, const Options& opts) {
         }
     }
 
-    // 8. bas
+    // 9. bas
     out << "+" << std::string(inner, '-') << "+\n";
 
     return out.str();
