@@ -16,10 +16,14 @@
 #include "EffetGainCombatParChampion.hpp"
 #include "EffetGainPvParChampion.hpp"
 #include "EffetGainCombatParFaction.hpp"
+#include "EffetGainCombatParGarde.hpp"
 #include "EffetNextAcquiredToHand.hpp"
 #include "EffetOptionnel.hpp"
 #include "EffetPiocherCarte.hpp"
 #include "EffetTopDeckFromDiscard.hpp"
 #include "EffetTopDeckNextAcquired.hpp"
+#include "EffetChampionDefausseTopDeck.hpp"
+#include "EffetPrepareChampion.hpp"
+#include "EffetSacrifier.hpp"
 
 #endif // EFFETS_HPP

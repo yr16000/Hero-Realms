@@ -6,6 +6,7 @@
 #include "../include/Player.hpp"
 #include "../include/ui/CardRenderer.hpp"
 #include "../include/Champion.hpp"
+#include "../include/ai/HeuristicAI.hpp"
 
 using namespace std;
 
@@ -18,8 +19,9 @@ static void afficherMenu(const Game& game) {
          << "E(etat)  H(main)  M(marche)  "
          << "C(champions)  AC(activer champion)  CA(champ adv)  "
          << "S(sacrifiées)  A(acheter)  P(jouer)  "
-        << "N(passer)  T(attaquer)  G(god)  Q(quitter)";
+        << "N(passer)  T(attaquer)  G(god)  I(IA)  Q(quitter)";
     if (game.isGodMode()) cout << "  [GodMode ACTIF]";
+    if (game.getAIPlayerIndex() != -1) cout << "  [IA active: J" << (game.getAIPlayerIndex() + 1) << "]";
     cout << "\n";
 }
 
@@ -207,6 +209,38 @@ int main() {
             joueurs[joueurActif].resetPourNouveauTour();
             joueurActif = 1 - joueurActif;
             cout << "→ Tour du joueur " << (joueurActif + 1) << "\n";
+            
+            // Si c'est le tour de l'IA, la faire jouer automatiquement
+            if (game.isAIPlayer(joueurActif)) {
+                cout << "\n=== Tour de l'IA ===\n";
+                AIPlayer* ai = game.getAIPlayer();
+                if (ai) {
+                    ai->playTurn(game, joueurs[joueurActif]);
+                }
+                cout << "=== L'IA a terminé son tour ===\n";
+                
+                // Passer automatiquement au joueur suivant
+                joueurs[joueurActif].resetPourNouveauTour();
+                joueurActif = 1 - joueurActif;
+                cout << "→ Tour du joueur " << (joueurActif + 1) << "\n";
+            }
+        }
+        else if (cmd == "I") {
+            // Toggle AI for player 2
+            if (game.getAIPlayerIndex() == -1) {
+                cout << "Activation de l'IA pour le joueur 2 (mode verbeux? O/N): ";
+                string verboseChoice;
+                getline(cin, verboseChoice);
+                bool verbose = (!verboseChoice.empty() && 
+                               (verboseChoice[0] == 'O' || verboseChoice[0] == 'o'));
+                
+                auto ai = std::make_unique<HeuristicAI>(1, verbose);
+                game.setAIPlayer(std::move(ai), 1);
+                cout << "IA HeuristicAI activée pour le joueur 2\n";
+            } else {
+                game.setAIPlayer(nullptr, -1);
+                cout << "IA désactivée\n";
+            }
         }
         else {
             cout << "Commande inconnue.\n";

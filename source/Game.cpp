@@ -8,6 +8,7 @@
 #include <cctype>
 #include "../include/ui/CardRenderer.hpp"
 #include "../include/CardLoader.hpp"
+#include "../include/ai/HeuristicAI.hpp"
 
 Game::Game(){
     // create two players
@@ -300,4 +301,26 @@ const Carte* Game::getModeleGemmeDeFeu() const {
 
 void Game::initialiserGemmesDeFeu() {
     gemmesDeFeu = CardLoader::loadFireGems();
+}
+ 
+ 
+// AI Methods
+void Game::setAIPlayer(std::unique_ptr<HeuristicAI> ai, int playerIndex) {
+    if (playerIndex >= 0 && playerIndex < static_cast<int>(players.size())) {
+        aiPlayer = std::move(ai);
+        aiPlayerIndex = playerIndex;
+        std::cout << \"IA activ�e pour le joueur \" << (playerIndex + 1) << \"\n\";
+    }
+}
+
+HeuristicAI* Game::getAIPlayer() const {
+    return aiPlayer.get();
+}
+
+int Game::getAIPlayerIndex() const {
+    return aiPlayerIndex;
+}
+
+bool Game::isAIPlayer(int playerIndex) const {
+    return aiPlayerIndex == playerIndex && aiPlayer != nullptr;
 }

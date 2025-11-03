@@ -4,6 +4,9 @@
 #include <vector>
 #include <memory>
 
+// Forward declaration
+class HeuristicAI;
+
 class Game{
     private:
         std::vector<Player> players;
@@ -16,6 +19,10 @@ class Game{
         // Pointer to the card currently activating its effects (or nullptr)
         Carte* carteEnActivation = nullptr;
         bool godMode = false;
+        
+        // AI Support
+        std::unique_ptr<HeuristicAI> aiPlayer;
+        int aiPlayerIndex = -1; // -1 = pas d'IA, 0 ou 1 = index du joueur IA
     public:
         Game();
         std::vector<Player>& getPlayers();
@@ -42,6 +49,12 @@ class Game{
         void setCarteEnActivation(Carte* c);
         Carte* getCarteEnActivation() const;
         const Carte* getModeleGemmeDeFeu() const;
+    
+    // AI Methods
+    void setAIPlayer(std::unique_ptr<HeuristicAI> ai, int playerIndex);
+    HeuristicAI* getAIPlayer() const;
+    int getAIPlayerIndex() const;
+    bool isAIPlayer(int playerIndex) const;
  
 
 };
