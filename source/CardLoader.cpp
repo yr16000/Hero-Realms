@@ -690,7 +690,7 @@ for (int i = 0; i < 2; ++i) {
         effetsCarte.push_back(std::make_unique<EffetGainGold>(2));
 
         std::vector<std::unique_ptr<Effet>> effetsFaction;
-        effetsFaction.push_back(std::make_unique<EffetActionTopDeck>());
+        effetsFaction.push_back(std::make_unique<EffetTopDeckNextAcquired>());
 
         auto c = std::make_unique<Champion>(
             "Rasmus, the Smuggler",
@@ -1381,7 +1381,9 @@ for (int i = 0; i < 2; ++i) {
     {
         std::vector<std::unique_ptr<Effet>> effetsCarte;
         effetsCarte.push_back(std::make_unique<EffetGainCombat>(6));
-        effetsCarte.push_back(std::make_unique<EffetDrawThenDiscard>());
+        effetsCarte.push_back(std::make_unique<EffetOptionnel>(
+            std::make_unique<EffetDrawThenDiscard>(2)
+        ));
 
         auto c = std::make_unique<Action>(
             "Rampage",

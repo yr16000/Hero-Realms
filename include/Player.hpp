@@ -59,7 +59,7 @@ class Player{
         std::vector<std::unique_ptr<Carte>>& getDeck();
         void melangerDeck();
         void melangerDefausse();
-        void afficherMain() const;
+        void afficherMainDetaillee() const;
         void afficherChampionsEnJeu() const;
         void afficherDefausse() const;
         void afficherSacrifices() const;

@@ -20,5 +20,5 @@ void EffetGainCombatParGarde::activerEffet(Player& proprietaire, Game& game){
 }
 
 std::string EffetGainCombatParGarde::toString() const {
-    return std::string("Gain de ") + std::to_string(montantParGarde) + " combat par garde";
+    return std::string("Gain de ") + std::to_string(montantParGarde) + " combat par garde (excluant cette carte)";
 }

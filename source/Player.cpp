@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <random>
 #include "../include/Champion.hpp"
+#include "../include/ui/CardRenderer.hpp"
 
 static std::mt19937 rng((std::random_device())());
 
@@ -289,8 +290,30 @@ std::vector<std::unique_ptr<Carte>>& Player::getChampionsEnJeu(){ return champio
 std::vector<std::unique_ptr<Carte>>& Player::getMain(){ return main; }
 std::vector<std::unique_ptr<Carte>>& Player::getDeck(){ return deck; }
 
-void Player::afficherMain() const{
-	std::cout << "Main du joueur " << id << " (" << main.size() << " cartes)\n";
+void Player::afficherMainDetaillee() const{
+	auto const& main   = this->main;
+	auto const& champs = this->championsEnJeu;
+
+	ui::CardRenderer::Options opts;
+	opts.width = 60;
+
+	if (!main.empty()) {
+		std::cout << "Votre main actuelle :\n";
+		for (size_t i = 0; i < main.size(); ++i) {
+			std::cout << "\n(" << i + 1 << ")\n";
+			std::cout << ui::CardRenderer::render(*main[i], opts);
+		}
+	} else {
+		std::cout << "Votre main est vide.\n";
+	}
+
+	if (!champs.empty()) {
+		std::cout << "\nVos champions en jeu :\n";
+		for (size_t i = 0; i < champs.size(); ++i) {
+			std::cout << "\n[" << i + 1 << "]\n";
+			std::cout << ui::CardRenderer::render(*champs[i], opts);
+		}
+	}
 }
 
 void Player::afficherChampionsEnJeu() const{
@@ -301,7 +324,19 @@ void Player::afficherChampionsEnJeu() const{
 }
 
 void Player::afficherDefausse() const{
-	std::cout << "Defausse du joueur " << id << " (" << defausse.size() << " cartes)\n";
+	auto const& defausse = this->defausse;
+	ui::CardRenderer::Options opts;
+	opts.width = 60;
+
+	if (!defausse.empty()) {
+		std::cout << "Votre défausse actuelle :\n";
+		for (size_t i = 0; i < defausse.size(); ++i) {
+			std::cout << "\n(" << i + 1 << ")\n";
+			std::cout << ui::CardRenderer::render(*defausse[i], opts);
+		}
+	} else {
+		std::cout << "Votre défausse est vide.\n";
+	}
 }
 
 void Player::afficherSacrifices() const{

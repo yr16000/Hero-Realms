@@ -1,5 +1,6 @@
 #include "../../include/effets/EffetChampionDefausseTopDeck.hpp"
 #include "../../include/Player.hpp"
+#include "../../include/ui/CardRenderer.hpp"
 #include <iostream>
 
 EffetChampionDefausseTopDeck::EffetChampionDefausseTopDeck() : Effet("Expend: put a champion from discard on top of deck") {}
@@ -27,11 +28,13 @@ void EffetChampionDefausseTopDeck::activerEffet(Player& proprietaire, Game& game
         return;
     }
 
-    std::cout << "Choisissez un champion dans la defausse à remettre sur le dessus du deck:\n";
     for(size_t k=0;k<champsIdx.size();++k){
         size_t i = champsIdx[k];
-        std::cout << k << ": " << def[i]->getNom() << "\n";
+        ui::CardRenderer::Options opts;
+        opts.width = 60;
+        std::cout << k << ": " << ui::CardRenderer::render(*def[i], opts) << "\n";
     }
+    std::cout << "Choisissez un champion dans la defausse à remettre sur le dessus du deck:\n";
     int choice=-1;
     std::cin >> choice;
     if(!std::cin){

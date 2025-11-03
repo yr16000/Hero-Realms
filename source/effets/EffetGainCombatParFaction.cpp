@@ -20,6 +20,13 @@ void EffetGainCombatParFaction::activerEffet(Player& proprietaire, Game& game) {
 
         compteur++;
     }
+    for(const auto& ptr : proprietaire.getMain()){
+        if (ptr->getFaction() != factionCible) continue;
+        // if activante is this same card and we should exclude it, skip
+        if (!inclureCetteCarte && activante != nullptr && ptr.get() == activante) continue;
+
+        compteur++;
+    }
 
     int combatGagne = compteur * montantPar;
     if (combatGagne != 0) proprietaire.modiffCombat(combatGagne);

@@ -23,31 +23,6 @@ static void afficherMenu(const Game& game) {
     cout << "\n";
 }
 
-static void afficherMainDetaillee(Player& joueur) {
-    auto& main   = joueur.getMain();
-    auto& champs = joueur.getChampionsEnJeu();
-
-    ui::CardRenderer::Options opts;
-    opts.width = 60;
-
-    if (!main.empty()) {
-        cout << "Votre main actuelle :\n";
-        for (size_t i = 0; i < main.size(); ++i) {
-            cout << "\n(" << i + 1 << ")\n";
-            cout << ui::CardRenderer::render(*main[i], opts);
-        }
-    } else {
-        cout << "Votre main est vide.\n";
-    }
-
-    if (!champs.empty()) {
-        cout << "\nVos champions en jeu :\n";
-        for (size_t i = 0; i < champs.size(); ++i) {
-            cout << "\n[" << i + 1 << "]\n";
-            cout << ui::CardRenderer::render(*champs[i], opts);
-        }
-    }
-}
 
 int main() {
     Game game;
@@ -92,7 +67,7 @@ int main() {
             game.afficherEtatJoueurs();
         }
         else if (cmd == "H") {
-            afficherMainDetaillee(p);
+            p.afficherMainDetaillee();
         }
         else if (cmd == "M") {
             game.afficherMarche();
@@ -125,7 +100,7 @@ int main() {
             if (main.empty()) {
                 cout << "Vous n'avez aucune carte à jouer.\n";
             } else {
-                afficherMainDetaillee(p);
+                p.afficherMainDetaillee();
                 cout << "Quelle carte jouer ? : ";
                 string s;
                 getline(cin, s);
@@ -229,8 +204,8 @@ int main() {
         }
         else if (cmd == "N") {
             // end current player's turn and start the other player's turn
-            joueurActif = 1 - joueurActif;
             joueurs[joueurActif].resetPourNouveauTour();
+            joueurActif = 1 - joueurActif;
             cout << "→ Tour du joueur " << (joueurActif + 1) << "\n";
         }
         else {

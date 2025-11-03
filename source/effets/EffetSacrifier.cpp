@@ -11,23 +11,24 @@ void EffetSacrifier::activerEffet(Player& proprietaire, Game& game){
     int n=nombre;
     while(n>0){
         std::cout << "Vous pouvez sacrifier jusqu'à " << n << " cartes de votre main ou defausse.\n";
-        std::cout << "Votre main:\n";
-        proprietaire.afficherMain();
-        std::cout << "Votre defausse:\n";
-        proprietaire.afficherDefausse();
-        std::cout<<"Entrez 0 pour arrêter de sacrifier des cartes ou autre pour continuer:\n";
+        std::cout<<"Entrez 0 pour arrêter de sacrifier des cartes ou 1 pour continuer:\n";
         int choix;
         std::cin >> choix;
         if(choix==0){
             break;
         }
         bool fromMain=true;
+        std::cout << "Votre main:\n";
+        proprietaire.afficherMainDetaillee();
+        std::cout << "Votre defausse:\n";
+        proprietaire.afficherDefausse();
         std::cout<<"Sacrifier de la main ou de la defausse? (1/0): ";
         int choixSource;
         std::cin >> choixSource;
         if(choixSource==0){
             fromMain=false;
         }
+        (choixSource==1?proprietaire.afficherMainDetaillee():proprietaire.afficherDefausse());
         std::cout << "Entrez le numéro de la carte à sacrifier";
         int index;
         std::cin >> index;

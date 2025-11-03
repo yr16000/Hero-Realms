@@ -24,7 +24,7 @@ void EffetDefausserCarteAdversaire::activerEffet(Player& proprietaire, Game& gam
             break;
         }
         std::cout << "Adversaire, choisissez une carte a defausser:\n";
-        adversaire->afficherMain();
+        proprietaire.afficherMainDetaillee();
         int choix=1;
         std::cin >> choix;
         while(choix<1 || choix>(int)adversaire->getMain().size()){
