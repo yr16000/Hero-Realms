@@ -1,5 +1,6 @@
 #include <iostream>
 #include <string>
+#include <limits>
 #include "../include/Game.hpp"
 #include "../include/Player.hpp"
 #include "../include/ui/Console.hpp"
@@ -56,6 +57,11 @@ int main() {
             if (ai) {
                 ai->playTour(game, p);
             }
+            
+            // Afficher l'état après le tour de l'IA
+            std::cout << "\n=== Fin du tour de l'IA ===\n";
+            std::cout << "Appuyez sur Entree pour continuer...\n";
+            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
             
             // Terminer le tour de l'IA
             joueurActif = 1 - joueurActif;
