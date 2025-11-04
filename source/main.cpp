@@ -5,6 +5,7 @@
 #include "../include/Player.hpp"
 #include "../include/ui/Console.hpp"
 #include "../include/ai/HeuristicAI.hpp"
+#include "../include/ai/MCTS.hpp"
 
 int main() {
     Game game;
@@ -17,21 +18,37 @@ int main() {
     // Demander si on veut jouer contre l'IA
     std::cout << "Hero Realms\n";
     std::cout << "1. Joueur vs Joueur\n";
-    std::cout << "2. Joueur vs IA\n";
-    int modeJeu = ui::Console::lireChoix("> Mode de jeu", 1, 2);
+    std::cout << "2. Joueur vs IA Heuristique\n";
+    std::cout << "3. Joueur vs IA MCTS\n";
+    int modeJeu = ui::Console::lireChoix("> Mode de jeu", 1, 3);
     
-    std::unique_ptr<HeuristicAI> ai = nullptr;
+    std::unique_ptr<HeuristicAI> heuristicAI = nullptr;
+    std::unique_ptr<MCTS> mctsAI = nullptr;
     bool aiVerbose = false;
+    int aiType = 0; // 0=none, 1=heuristic, 2=mcts
     
     if (modeJeu == 2) {
         std::cout << "Activer le mode verbose (logs IA) ? (1=Oui, 0=Non): ";
         int verbose = ui::Console::lireChoix("", 0, 1);
         aiVerbose = (verbose == 1);
         
-        // Joueur vs IA
-        ai = std::make_unique<HeuristicAI>(1, aiVerbose);
-        game.setAIPlayer(std::move(ai), 1);
-        std::cout << "\n Joueur 1 (Vous) vs IA (Joueur 2) \n";
+        // Joueur vs IA Heuristique
+        heuristicAI = std::make_unique<HeuristicAI>(1, aiVerbose);
+        game.setAIPlayer(std::move(heuristicAI), 1);
+        aiType = 1;
+        std::cout << "\n Joueur 1 (Vous) vs IA Heuristique (Joueur 2) \n";
+    } else if (modeJeu == 3) {
+        std::cout << "Activer le mode verbose (logs IA) ? (1=Oui, 0=Non): ";
+        int verbose = ui::Console::lireChoix("", 0, 1);
+        aiVerbose = (verbose == 1);
+        
+        std::cout << "Nombre d'iterations MCTS (recommande: 50-200): ";
+        int iterations = ui::Console::lireChoix("", 10, 1000);
+        
+        // Joueur vs IA MCTS
+        mctsAI = std::make_unique<MCTS>(1, iterations, aiVerbose);
+        aiType = 2;
+        std::cout << "\n Joueur 1 (Vous) vs IA MCTS (Joueur 2) \n";
     }
 
     // Init tour du joueur 1
@@ -49,13 +66,21 @@ int main() {
         Player& adv = joueurs[1 - joueurActif];
         
         // Si c'est le tour de l'IA, la laisser jouer
-        if (game.isAIPlayer(joueurActif)) {
+        if ((aiType > 0 && joueurActif == 1) || game.isAIPlayer(joueurActif)) {
             std::cout << "\n Tour de l'IA (Joueur " << (joueurActif + 1) << ") \n";
             ui::Console::afficherPlateau(game, p, adv, false);
             
-            HeuristicAI* ai = game.getAIPlayer();
-            if (ai) {
-                ai->playTour(game, p);
+            if (aiType == 1) {
+                // IA Heuristique
+                HeuristicAI* ai = game.getAIPlayer();
+                if (ai) {
+                    ai->playTour(game, p);
+                }
+            } else if (aiType == 2) {
+                // IA MCTS
+                if (mctsAI) {
+                    mctsAI->playTour(game, p);
+                }
             }
             
             // Afficher l'état après le tour de l'IA

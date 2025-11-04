@@ -46,6 +46,7 @@ void HeuristicAI::playTour(Game& game, Player& player) {
     while (safetyCounter++ < MAX_ITERATIONS) {
         int champToActivate = decideChampionToActivate(game, player);
         if (champToActivate == -1) {
+            std::cout << "[IA]  plus ou pas de champion à activer" << std::endl;
             break;
         }
         auto& champs = player.getChampionsEnJeu();
