@@ -3,6 +3,7 @@
 #include "../include/Game.hpp"
 #include "../include/Player.hpp"
 #include "../include/ui/Console.hpp"
+#include "../include/ai/HeuristicAI.hpp"
 
 int main() {
     Game game;
@@ -11,6 +12,26 @@ int main() {
     auto& joueurs = game.getPlayers();
     int joueurActif = 0;
     bool quitter = false;
+    
+    // Demander si on veut jouer contre l'IA
+    std::cout << "Hero Realms\n";
+    std::cout << "1. Joueur vs Joueur\n";
+    std::cout << "2. Joueur vs IA\n";
+    int modeJeu = ui::Console::lireChoix("> Mode de jeu", 1, 2);
+    
+    std::unique_ptr<HeuristicAI> ai = nullptr;
+    bool aiVerbose = false;
+    
+    if (modeJeu == 2) {
+        std::cout << "Activer le mode verbose (logs IA) ? (1=Oui, 0=Non): ";
+        int verbose = ui::Console::lireChoix("", 0, 1);
+        aiVerbose = (verbose == 1);
+        
+        // Joueur vs IA
+        ai = std::make_unique<HeuristicAI>(1, aiVerbose);
+        game.setAIPlayer(std::move(ai), 1);
+        std::cout << "\n=== Joueur 1 (Vous) vs IA (Joueur 2) ===\n";
+    }
 
     // Init tour du joueur 1
     joueurs[joueurActif].resetPourNouveauTour();
@@ -25,8 +46,24 @@ int main() {
 
         Player& p   = joueurs[joueurActif];
         Player& adv = joueurs[1 - joueurActif];
+        
+        // Si c'est le tour de l'IA, la laisser jouer
+        if (game.isAIPlayer(joueurActif)) {
+            std::cout << "\n=== Tour de l'IA (Joueur " << (joueurActif + 1) << ") ===\n";
+            ui::Console::afficherPlateau(game, p, adv, false);
+            
+            HeuristicAI* ai = game.getAIPlayer();
+            if (ai) {
+                ai->playTour(game, p);
+            }
+            
+            // Terminer le tour de l'IA
+            joueurActif = 1 - joueurActif;
+            joueurs[joueurActif].resetPourNouveauTour();
+            continue;
+        }
 
-        // 🔹 En-tête + menu (PAS de plateau auto au lancement)
+        // 🔹 En-tête + menu pour joueur humain
         ui::Console::afficherHeader(game, p, adv);
         ui::Console::afficherMenu(game);
 

@@ -83,7 +83,7 @@ public:
      * @param player Le joueur
      * @return Score de potentiel
      */
-    static float evaluateHandPotential(Player& player);
+    static float evaluateHandPotential(Player& player, Game& game);
 
     /**
      * Évalue l'urgence d'acheter des champions vs des actions.
@@ -100,6 +100,54 @@ public:
      * @return Score (plus élevé = meilleur sacrifice)
      */
     static float evaluateSacrificeValue(const Carte* carte, Player& player);
+
+    // Fonctions utilitaires pour l'analyse du jeu (utilisées par HeuristicAI et MCTS)
+    
+    /**
+     * Compte le nombre de cartes d'un type spécifique.
+     * @param cards Liste de cartes à analyser
+     * @param type Type de carte recherché
+     * @return Nombre de cartes du type spécifié
+     */
+    static int countCardsByType(const std::vector<std::unique_ptr<Carte>>& cards, TypeCarte type);
+    
+    /**
+     * Compte le nombre de cartes d'une faction dans une liste.
+     * @param cards Liste de cartes
+     * @param faction Faction recherchée
+     * @return Nombre de cartes de cette faction
+     */
+    static int countCardsByFaction(const std::vector<std::unique_ptr<Carte>>& cards, Faction faction);
+    
+    /**
+     * Compte le nombre de champions dans une liste.
+     * @param cards Liste de cartes
+     * @return Nombre de champions
+     */
+    static int countChampions(const std::vector<std::unique_ptr<Carte>>& cards);
+    
+    /**
+     * Calcule la valeur totale (coût) des cartes.
+     * @param cards Liste de cartes
+     * @return Somme des coûts
+     */
+    static int getTotalCardValue(const std::vector<std::unique_ptr<Carte>>& cards);
+    
+    /**
+     * Vérifie si une faction domine (au moins 3 cartes).
+     * @param player Le joueur
+     * @param faction La faction à vérifier
+     * @return true si domination de faction
+     */
+    static bool hasFactionDominante(Player& player, Faction faction);
+    
+    /**
+     * Calcule le potentiel de dégâts restant du joueur.
+     * @param game État du jeu
+     * @param player Le joueur
+     * @return Estimation des dégâts potentiels
+     */
+    static int calculateRemainingDamagePotential(Game& game, Player& player);
 
 private:
     // Poids des différents facteurs pour l'évaluation globale
@@ -123,9 +171,6 @@ private:
 
     // Méthodes utilitaires privées
     static bool isStartingCard(const Carte* carte);
-    static int countCardsByFaction(const std::vector<std::unique_ptr<Carte>>& cards, Faction faction);
-    static int countChampions(const std::vector<std::unique_ptr<Carte>>& cards);
-    static int getTotalCardValue(const std::vector<std::unique_ptr<Carte>>& cards);
 };
 
 #endif // GAMEEVALUATOR_HPP

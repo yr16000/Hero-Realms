@@ -257,10 +257,14 @@ bool Game::isGodMode() const {
     return godMode;
 }
 
-int Game::getVisibleMarketSize() const {
+int Game::getMarketSize() const {
     int marcheSize = (int)marche.size();
     if (godMode) return marcheSize + (int)pioche.size();
     return marcheSize;
+}
+
+const std::vector<std::unique_ptr<Carte>>& Game::getMarche() const {
+    return marche;
 }
 
 void Game::initialiserMarche() {
@@ -302,14 +306,13 @@ const Carte* Game::getModeleGemmeDeFeu() const {
 void Game::initialiserGemmesDeFeu() {
     gemmesDeFeu = CardLoader::loadFireGems();
 }
- 
- 
+
 // AI Methods
 void Game::setAIPlayer(std::unique_ptr<HeuristicAI> ai, int playerIndex) {
     if (playerIndex >= 0 && playerIndex < static_cast<int>(players.size())) {
         aiPlayer = std::move(ai);
         aiPlayerIndex = playerIndex;
-        std::cout << \"IA activ�e pour le joueur \" << (playerIndex + 1) << \"\n\";
+        std::cout << "IA activée pour le joueur " << (playerIndex + 1) << "\n";
     }
 }
 

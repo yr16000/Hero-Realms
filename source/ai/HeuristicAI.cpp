@@ -2,6 +2,7 @@
 #include "../../include/Champion.hpp"
 #include "../../include/Action.hpp"
 #include "../../include/Objet.hpp"
+#include "../../include/effets/Effets.hpp"
 #include <algorithm>
 #include <iostream>
 #include <limits>
@@ -10,19 +11,32 @@ HeuristicAI::HeuristicAI(int playerId, bool verbose)
     : playerId(playerId), verbose(verbose) {
 }
 
-void HeuristicAI::playTurn(Game& game, Player& player) {
-    logDecision("=== IA commence son tour ===");
+void HeuristicAI::playTour(Game& game, Player& player) {
+    logDecision("IA commence son tour");
     
     Player& opponent = game.getPlayers()[1 - playerId];
+    
+    // STRATÉGIE: Vérifier si on peut finir l'adversaire ce tour
+    int maxCombat = calculateMaxPotentialCombat(game, player);
+    bool canFinishOpponent = (maxCombat >= opponent.getHp());
+    
+    logDecision("Combat max potentiel: " + std::to_string(maxCombat) + 
+               ", HP adversaire: " + std::to_string(opponent.getHp()));
+    
+    if (canFinishOpponent) {
+        logDecision("!!! VICTOIRE POSSIBLE CE TOUR (Combat max: " + 
+                   std::to_string(maxCombat) + " vs HP adversaire: " + 
+                   std::to_string(opponent.getHp()) + ") !!!");
+    }
     
     // Phase 1: Jouer les cartes dans l'ordre optimal
     logDecision("Phase 1: Jouer les cartes");
     bool continuePlayingCards = true;
     int safetyCounter = 0;
-    const int MAX_ITERATIONS = 20; // Éviter boucles infinies
+    const int MAX_ITERATIONS = 20;
     
     while (continuePlayingCards && safetyCounter++ < MAX_ITERATIONS) {
-        int cardToPlay = decideCardToPlay(game, player);
+        int cardToPlay = decideCardPlay(game, player);
         
         if (cardToPlay == -1) {
             continuePlayingCards = false;
@@ -59,29 +73,31 @@ void HeuristicAI::playTurn(Game& game, Player& player) {
                     champ->activer(player, game);
                 }
             }
-            continueActivating = false; // Pour l'instant, activer un seul champion par itération
+            continueActivating = false;
         }
     }
     
-    // Phase 3: Achats
-    logDecision("Phase 3: Achats (Or disponible: " + std::to_string(player.getGold()) + ")");
-    safetyCounter = 0;
-    bool continueBuying = true;
-    
-    while (continueBuying && safetyCounter++ < MAX_ITERATIONS) {
-        int cardToBuy = decideCardToBuy(game, player);
+    // Phase 3: Achats (seulement si on ne peut pas finir l'adversaire)
+    if (canFinishOpponent) {
+        logDecision("Phase 3: SKIP ACHATS - Focus sur la victoire !");
+    } else {
+        logDecision("Phase 3: Achats (Or disponible: " + std::to_string(player.getGold()) + ")");
+        safetyCounter = 0;
+        bool continueBuying = true;
         
-        if (cardToBuy == -2) {
-            continueBuying = false;
-            logDecision("Fin des achats");
-        } else if (cardToBuy == -1) {
-            // Acheter gemme de feu
-            logDecision("Achète Gemme de Feu");
-            game.acheterGemmeDeFeu(player);
-        } else {
-            // Acheter carte du marché
-            logDecision("Achète carte index: " + std::to_string(cardToBuy + 1));
-            game.acheterCarte(cardToBuy, player);
+        while (continueBuying && safetyCounter++ < MAX_ITERATIONS) {
+            int cardToBuy = decideCardBuy(game, player);
+            
+            if (cardToBuy == -2) {
+                continueBuying = false;
+                logDecision("Fin des achats");
+            } else if (cardToBuy == -1) {
+                logDecision("Achète Gemme de Feu");
+                game.acheterGemmeDeFeu(player);
+            } else {
+                logDecision("Achète carte index: " + std::to_string(cardToBuy));
+                game.acheterCarte(cardToBuy, player);
+            }
         }
     }
     
@@ -105,10 +121,10 @@ void HeuristicAI::playTurn(Game& game, Player& player) {
         }
     }
     
-    logDecision("=== IA termine son tour ===");
+    logDecision("IA termine son tour");
 }
 
-int HeuristicAI::decideCardToPlay(Game& game, Player& player) {
+int HeuristicAI::decideCardPlay(Game& game, Player& player) {
     auto& main = player.getMain();
     
     if (main.empty()) {
@@ -159,73 +175,122 @@ std::vector<int> HeuristicAI::evaluatePlayOrder(Game& game, Player& player) {
 float HeuristicAI::scoreCardPlay(const Carte* carte, Game& game, Player& player) {
     if (!carte) return 0.0f;
     
-    float score = 10.0f; // Score de base pour jouer une carte
+    Player& opponent = game.getPlayers()[1 - playerId];
     
-    // Bonus pour les cartes qui génèrent des ressources
+    // Utiliser evaluateCardValue de GameEvaluator comme base
+    float score = GameEvaluator::evaluateCardValue(carte);
+    
+    // Ajuster selon le contexte actuel
     TypeCarte type = carte->getType();
     
-    // Les objets génèrent généralement de l'or
-    if (type == TypeCarte::Objet) {
-        score += 15.0f; // Priorité haute pour générer de l'or tôt
-    }
+    // 1. PRIORITÉ: Vérifier si on peut finir l'adversaire avec combat max potentiel
+    int maxCombat = calculateMaxPotentialCombat(game, player);
+    bool canFinish = (maxCombat >= opponent.getHp());
     
-    // Les actions peuvent générer or, combat, pioche
-    if (type == TypeCarte::Action) {
-        score += 12.0f;
-    }
-    
-    // Les champions restent en jeu - jouer tôt
-    if (type == TypeCarte::Champion) {
-        score += 20.0f; // Haute priorité pour mettre des champions en jeu
+    if (canFinish) {
+        // Favoriser FORTEMENT les cartes qui donnent du combat
+        bool hasCombatEffect = false;
+        for (const auto& effet : carte->getEffetsCarte()) {
+            if (dynamic_cast<EffetGainCombat*>(effet.get()) ||
+                dynamic_cast<EffetGainCombatParChampion*>(effet.get()) ||
+                dynamic_cast<EffetGainCombatParFaction*>(effet.get())) {
+                hasCombatEffect = true;
+                score += 100.0f; // ÉNORME bonus pour victoire
+                break;
+            }
+        }
         
-        const Champion* champ = dynamic_cast<const Champion*>(carte);
-        if (champ && champ->getEstGarde()) {
-            score += 5.0f; // Bonus pour les gardes
+        // Pénaliser les cartes sans combat si on peut finir
+        if (!hasCombatEffect && type != TypeCarte::Champion) {
+            score -= 50.0f;
         }
     }
     
-    // Bonus pour les cartes avec effets de faction si on a déjà cette faction
+    // 2. Champions: jouer tôt pour avoir leurs effets + présence board
+    if (type == TypeCarte::Champion) {
+        score += 25.0f;
+        const Champion* champ = dynamic_cast<const Champion*>(carte);
+        if (champ && champ->getEstGarde()) {
+            score += 10.0f;
+        }
+    }
+    
+    // 3. Objets: générer de l'or tôt pour achats
+    if (type == TypeCarte::Objet) {
+        score += 20.0f;
+    }
+    
+    // 4. Actions: polyvalence
+    if (type == TypeCarte::Action) {
+        score += 15.0f;
+    }
+    
+    // 5. Synergies de faction (IMPORTANT)
     Faction faction = carte->getFaction();
     if (faction != Faction::Aucun) {
-        int factionCount = player.getFactionCount(faction);
-        if (factionCount > 0) {
-            score += factionCount * 8.0f; // Fort bonus pour synergie
+        int factionInPlay = GameEvaluator::countCardsByFaction(player.getChampionsEnJeu(), faction);
+        int factionInHand = GameEvaluator::countCardsByFaction(player.getMain(), faction);
+        
+        if (factionInPlay + factionInHand > 1) {
+            score += (factionInPlay + factionInHand) * 12.0f;
             
             if (!carte->getEffetsFaction().empty()) {
-                score += 10.0f; // Bonus si la carte a des effets de faction
+                score += 20.0f;
             }
         }
     }
     
-    // Pénalité si on a déjà beaucoup de combat et pas besoin de plus
-    Player& opponent = game.getPlayers()[1 - playerId];
-    if (player.getAtk() > opponent.getHp()) {
-        // On a déjà assez de combat pour tuer l'adversaire
-        if (type == TypeCarte::Champion) {
-            score -= 5.0f; // Moins urgent de jouer des champions
+    // 6. Effets spéciaux prioritaires
+    for (const auto& effet : carte->getEffetsCarte()) {
+        if (dynamic_cast<EffetPiocherCarte*>(effet.get())) {
+            score += 15.0f;
+        }
+        if (dynamic_cast<EffetAssomerChampion*>(effet.get())) {
+            score += 20.0f;
+        }
+        if (dynamic_cast<EffetDefausserCarteAdversaire*>(effet.get())) {
+            score += 12.0f;
+        }
+        if (dynamic_cast<EffetCarteDefausseTopDeck*>(effet.get())) {
+            score += 10.0f;
+        }
+        if (dynamic_cast<EffetCarteMainDirect*>(effet.get())) {
+            score += 10.0f;
+        }
+        if (dynamic_cast<EffetChampionDefausseTopDeck*>(effet.get())) {
+            score += 13.0f;
         }
     }
     
     return score;
 }
 
-int HeuristicAI::decideCardToBuy(Game& game, Player& player) {
+int HeuristicAI::decideCardBuy(Game& game, Player& player) {
     int gold = player.getGold();
     
+    logDecision("decideCardBuy: Or disponible = " + std::to_string(gold));
+    
     if (gold == 0) {
+        logDecision("decideCardBuy: Pas d'or");
         return -2; // Pas d'or, ne rien acheter
     }
     
     auto purchaseOptions = evaluatePurchaseOptions(game, player);
     
+    logDecision("decideCardBuy: " + std::to_string(purchaseOptions.size()) + " options trouvées");
+    
     if (purchaseOptions.empty()) {
+        logDecision("decideCardBuy: Aucune option d'achat");
         return -2; // Pas d'options d'achat
     }
     
     // Meilleure option
     ActionEvaluation best = purchaseOptions[0];
     
+    logDecision("decideCardBuy: Meilleure option = " + best.description);
+    
     if (!shouldPurchaseNow(game, player, best)) {
+        logDecision("decideCardBuy: shouldPurchaseNow a retourné false");
         return -2; // Attendre un meilleur achat
     }
     
@@ -243,49 +308,78 @@ std::vector<HeuristicAI::ActionEvaluation> HeuristicAI::evaluatePurchaseOptions(
     int gold = player.getGold();
     Player& opponent = game.getPlayers()[1 - playerId];
     
-    PurchaseStrategy strategy = determinePurchaseStrategy(game, player, opponent);
+    // Évaluer chaque carte du marché avec GameEvaluator
+    const auto& marche = game.getMarche();
     
-    // Évaluer les cartes du marché
-    // Note: On ne peut pas accéder directement au marché depuis ici
-    // On va utiliser getVisibleMarketSize et supposer que les indices sont valides
-    int marketSize = game.getVisibleMarketSize();
+    logDecision("Marché contient " + std::to_string(marche.size()) + " cartes:");
     
-    // Pour l'instant, on va simplement favoriser les achats de cartes chères
-    // Dans une version plus avancée, on accéderait aux cartes réelles du marché
+    for (size_t i = 0; i < marche.size(); ++i) {
+        try {
+            const Carte* carte = marche[i].get();
+            
+            logDecision("  Index " + std::to_string(i) + ": " + 
+                       (carte ? carte->getNom() : "nullptr") + 
+                       " (cout: " + (carte ? std::to_string(carte->getCout()) : "?") + ")");
+            
+            if (!carte) {
+                logDecision("    -> Carte null, skip");
+                continue;
+            }
+            
+            if (carte->getCout() > gold) {
+                logDecision("    -> Trop cher (or=" + std::to_string(gold) + ")");
+                continue; // Trop cher
+            }
+            
+            logDecision("    -> Evaluation en cours...");
+            
+            // Utiliser evaluateCardInContext de GameEvaluator
+            float score = GameEvaluator::evaluateCardInContext(carte, player, game);
+            
+            logDecision("    -> Score de base: " + std::to_string(score));
+            
+            // Bonus si on manque de champions
+            if (carte->getType() == TypeCarte::Champion) {
+                float championPriority = GameEvaluator::evaluateChampionPriority(player, opponent);
+                score += championPriority;
+                logDecision("    -> Bonus champion: " + std::to_string(championPriority));
+            }
+            
+            std::string desc = carte->getNom() + " (cout: " + std::to_string(carte->getCout()) + 
+                              ", score: " + std::to_string(score) + ", index: " + std::to_string(i) + ")";
+            logDecision("    -> Ajouté aux options: " + desc);
+            options.emplace_back(static_cast<int>(i), score, desc);
+        } catch (const std::exception& e) {
+            logDecision("    -> EXCEPTION: " + std::string(e.what()));
+        } catch (...) {
+            logDecision("    -> EXCEPTION INCONNUE");
+        }
+    }
     
-    // Gemme de feu (coût 2)
+    logDecision("Évaluation des options de marché terminée");
+    
+    // Gemme de feu
     if (gold >= 2) {
-        float score = 15.0f; // Score de base pour gemme de feu
+        logDecision("Évaluation de la Gemme de Feu...");
         
-        if (strategy == PurchaseStrategy::ECONOMIC) {
-            score += 10.0f; // Les gemmes sont bonnes pour l'économie
+        // Évaluer la gemme selon la qualité actuelle du deck
+        float deckQuality = GameEvaluator::evaluateDeckQuality(player);
+        
+        logDecision("  Qualité du deck: " + std::to_string(deckQuality));
+        
+        float score = 15.0f;
+        
+        // Si le deck est faible, gemme est moins importante
+        if (deckQuality < 20.0f) {
+            score -= 10.0f;
         }
         
-        options.emplace_back(-1, score, "Gemme de Feu");
+        logDecision("  Score gemme: " + std::to_string(score));
+        
+        options.emplace_back(-1, score, "Gemme de Feu (score: " + std::to_string(score) + ")");
     }
     
-    // Pour les cartes du marché, on va utiliser une heuristique basée sur le coût disponible
-    // Idéalement, on voudrait pouvoir accéder aux cartes réelles
-    // Pour l'instant, simulons quelques options basées sur l'or disponible
-    
-    if (gold >= 8) {
-        float score = 50.0f;
-        if (strategy == PurchaseStrategy::AGGRESSIVE) score += 15.0f;
-        if (strategy == PurchaseStrategy::CONTROL) score += 10.0f;
-        options.emplace_back(0, score, "Carte chère (estimée 8+)");
-    }
-    
-    if (gold >= 5) {
-        float score = 35.0f;
-        if (strategy == PurchaseStrategy::BALANCED) score += 10.0f;
-        options.emplace_back(0, score, "Carte moyenne (estimée 5-7)");
-    }
-    
-    if (gold >= 3) {
-        float score = 20.0f;
-        if (strategy == PurchaseStrategy::ECONOMIC) score += 5.0f;
-        options.emplace_back(0, score, "Carte bon marché (estimée 3-4)");
-    }
+    logDecision("Tri des options...");
     
     // Trier par score décroissant
     std::sort(options.begin(), options.end(),
@@ -293,46 +387,14 @@ std::vector<HeuristicAI::ActionEvaluation> HeuristicAI::evaluatePurchaseOptions(
                   return a.score > b.score;
               });
     
+    logDecision("Options triées, retour de " + std::to_string(options.size()) + " options");
+    
     return options;
 }
 
 bool HeuristicAI::shouldPurchaseNow(Game& game, Player& player, const ActionEvaluation& bestPurchase) {
     // Toujours acheter si on a trouvé une bonne option
-    // Dans une version plus avancée, on pourrait attendre de meilleures cartes
-    return bestPurchase.score > 10.0f;
-}
-
-HeuristicAI::PurchaseStrategy HeuristicAI::determinePurchaseStrategy(
-    Game& game, Player& player, Player& opponent) {
-    
-    int hpDiff = player.getHp() - opponent.getHp();
-    int ourChampions = static_cast<int>(player.getChampionsEnJeu().size());
-    int theirChampions = static_cast<int>(opponent.getChampionsEnJeu().size());
-    
-    // Si on est en danger (faible HP), jouer défensif
-    if (player.getHp() < 20 || hpDiff < -10) {
-        return PurchaseStrategy::CONTROL;
-    }
-    
-    // Si on a un gros avantage, être agressif
-    if (hpDiff > 15 && ourChampions > theirChampions) {
-        return PurchaseStrategy::AGGRESSIVE;
-    }
-    
-    // Si on manque de champions, prioriser le contrôle
-    if (ourChampions < 2) {
-        return PurchaseStrategy::CONTROL;
-    }
-    
-    // Si début de partie, focus économie
-    int totalCards = static_cast<int>(player.getDeck().size() + 
-                                      player.getDefausse().size() + 
-                                      player.getMain().size());
-    if (totalCards < 15) {
-        return PurchaseStrategy::ECONOMIC;
-    }
-    
-    return PurchaseStrategy::BALANCED;
+    return bestPurchase.score > 5.0f;
 }
 
 int HeuristicAI::decideAttackTarget(Game& game, Player& player, Player& opponent) {
@@ -342,7 +404,42 @@ int HeuristicAI::decideAttackTarget(Game& game, Player& player, Player& opponent
         return -2; // Pas de combat, ne pas attaquer
     }
     
-    // Vérifier s'il y a des gardes
+    // PRIORITÉ 1: Vérifier si on peut FINIR l'adversaire
+    if (player.getAtk() >= opponent.getHp()) {
+        // Vérifier s'il y a une garde qui bloque
+        int guardeIndex = -1;
+        for (size_t i = 0; i < advChamps.size(); ++i) {
+            Champion* champ = dynamic_cast<Champion*>(advChamps[i].get());
+            if (champ && champ->getEstGarde()) {
+                guardeIndex = static_cast<int>(i);
+                break;
+            }
+        }
+        
+        if (guardeIndex == -1) {
+            // Pas de garde, tuer directement !
+            logDecision("VICTOIRE POSSIBLE - Attaque directe pour tuer l'adversaire");
+            return -1;
+        } else {
+            // Il y a une garde, il faut la tuer d'abord
+            Champion* garde = dynamic_cast<Champion*>(advChamps[guardeIndex].get());
+            if (garde && player.getAtk() >= garde->getPv() + opponent.getHp()) {
+                // On peut tuer la garde ET finir l'adversaire
+                logDecision("Tue la garde puis finira l'adversaire");
+                return guardeIndex;
+            } else if (garde && player.getAtk() >= garde->getPv()) {
+                // On peut seulement tuer la garde
+                logDecision("Tue la garde (garde bloque la victoire)");
+                return guardeIndex;
+            } else {
+                // Pas assez pour tuer la garde, on attaque quand même
+                logDecision("Attaque la garde (pas assez pour tuer)");
+                return guardeIndex;
+            }
+        }
+    }
+    
+    // PRIORITÉ 2: Vérifier s'il y a des gardes (obligatoire)
     int guardeIndex = -1;
     for (size_t i = 0; i < advChamps.size(); ++i) {
         Champion* champ = dynamic_cast<Champion*>(advChamps[i].get());
@@ -352,38 +449,56 @@ int HeuristicAI::decideAttackTarget(Game& game, Player& player, Player& opponent
         }
     }
     
-    // Si garde présent, on DOIT l'attaquer
     if (guardeIndex != -1) {
         Champion* garde = dynamic_cast<Champion*>(advChamps[guardeIndex].get());
-        if (garde && player.getAtk() >= garde->getPv()) {
-            logDecision("Attaque le garde obligatoire");
-            return guardeIndex;
-        } else {
-            logDecision("Pas assez de combat pour tuer le garde, attaque quand même");
+        if (garde) {
+            if (player.getAtk() >= garde->getPv()) {
+                logDecision("Tue la garde obligatoire");
+            } else {
+                logDecision("Attaque la garde (pas assez pour tuer)");
+            }
             return guardeIndex;
         }
     }
     
-    // Pas de garde : choisir entre champions et joueur
+    // PRIORITÉ 3: Évaluer le contrôle du board
+    float boardControl = GameEvaluator::evaluateBoardControl(player, opponent);
     
-    // Si on peut tuer l'adversaire, le faire !
-    if (player.getAtk() >= opponent.getHp()) {
-        logDecision("Peut tuer l'adversaire - attaque directe");
-        return -1; // Attaque directe
+    // Si on domine largement le board, attaquer directement
+    if (boardControl > 30.0f) {
+        logDecision("Domination du board - Attaque directe sur le joueur");
+        return -1;
     }
     
-    // Sinon, évaluer s'il vaut mieux tuer un champion ou frapper le joueur
+    // PRIORITÉ 4: Chercher un champion qu'on peut tuer
+    int bestTargetIndex = -1;
+    float bestTargetValue = 0.0f;
+    
     for (size_t i = 0; i < advChamps.size(); ++i) {
         Champion* champ = dynamic_cast<Champion*>(advChamps[i].get());
         if (champ && player.getAtk() >= champ->getPv()) {
-            // On peut tuer ce champion
-            logDecision("Peut tuer un champion adverse");
-            return static_cast<int>(i);
+            // On peut tuer ce champion - évaluer sa valeur
+            float value = GameEvaluator::evaluateCardValue(champ);
+            
+            // Bonus si c'est une garde (protège l'adversaire)
+            if (champ->getEstGarde()) {
+                value += 20.0f;
+            }
+            
+            if (value > bestTargetValue) {
+                bestTargetValue = value;
+                bestTargetIndex = static_cast<int>(i);
+            }
         }
     }
     
-    // Sinon, attaque directe sur le joueur
-    logDecision("Attaque directe sur le joueur");
+    if (bestTargetIndex != -1) {
+        logDecision("Tue le champion le plus précieux");
+        return bestTargetIndex;
+    }
+    
+    // PRIORITÉ 5: Pas de champion tuable - attaquer directement
+    logDecision("Aucun champion tuable - Attaque directe sur le joueur");
     return -1;
 }
 
@@ -403,24 +518,43 @@ std::vector<HeuristicAI::ActionEvaluation> HeuristicAI::evaluateChampionActivati
     
     std::vector<ActionEvaluation> evaluations;
     auto& champs = player.getChampionsEnJeu();
+    Player& opponent = game.getPlayers()[1 - playerId];
     
     for (size_t i = 0; i < champs.size(); ++i) {
         Champion* champ = dynamic_cast<Champion*>(champs[i].get());
         if (champ && !champ->getEstActiver()) {
-            float score = 30.0f; // Score de base
+            // Utiliser evaluateCardValue comme base
+            float score = GameEvaluator::evaluateCardValue(champ);
             
-            // Bonus pour les cartes avec effets de faction
+            // Bonus pour les effets de faction si activables
             Faction faction = champ->getFaction();
-            if (faction != Faction::Aucun) {
-                int factionCount = player.getFactionCount(faction);
-                if (factionCount > 1) {
-                    score += factionCount * 10.0f;
+            if (faction != Faction::Aucun && !champ->getEffetsFaction().empty()) {
+                int factionCount = GameEvaluator::countCardsByFaction(player.getMain(), faction);
+                factionCount += GameEvaluator::countCardsByFaction(player.getChampionsEnJeu(), faction);
+                
+                if (factionCount >= 2) {
+                    score += factionCount * 15.0f; // Fort bonus si synergie
                 }
             }
             
-            // Bonus si le champion a des effets de faction
-            if (!champ->getEffetsFaction().empty()) {
-                score += 15.0f;
+            // Analyser les effets pour priorisation
+            for (const auto& effet : champ->getEffetsCarte()) {
+                // Priorité haute: effets qui peuvent finir l'adversaire
+                if (dynamic_cast<EffetGainCombat*>(effet.get())) {
+                    if (player.getAtk() + 5 >= opponent.getHp()) { // Estimation
+                        score += 30.0f; // Peut permettre de finir
+                    }
+                }
+                // Pioche = très bon
+                if (dynamic_cast<EffetPiocherCarte*>(effet.get())) {
+                    score += 20.0f;
+                }
+                // Contrôle adversaire
+                if (dynamic_cast<EffetAssomerChampion*>(effet.get())) {
+                    if (!opponent.getChampionsEnJeu().empty()) {
+                        score += 25.0f; // Très utile si adversaire a des champions
+                    }
+                }
             }
             
             std::string desc = champ->getNom() + " (score: " + std::to_string(score) + ")";
@@ -454,34 +588,159 @@ bool HeuristicAI::shouldSaveResources(Game& game, Player& player) {
     return false;
 }
 
-int HeuristicAI::countCardsInHand(const Player& player, TypeCarte type) {
-    int count = 0;
-    for (const auto& carte : player.getMain()) {
-        if (carte->getType() == type) {
-            count++;
-        }
-    }
-    return count;
+int HeuristicAI::countCardsInHand(Player& player, TypeCarte type) {
+    // Utiliser la fonction de GameEvaluator
+    return GameEvaluator::countCardsByType(player.getMain(), type);
 }
 
-bool HeuristicAI::hasFactionDominance(const Player& player, Faction faction) {
-    int factionCount = player.getFactionCount(faction);
-    return factionCount >= 3;
+bool HeuristicAI::hasFactionDominance(Player& player, Faction faction) {
+    // Utiliser la fonction de GameEvaluator
+    return GameEvaluator::hasFactionDominante(player, faction);
 }
 
 int HeuristicAI::calculateRemainingDamagePotential(Game& game, Player& player) {
-    // Estimer le potentiel de dégâts restant
-    int potential = player.getAtk();
+    // Utiliser la fonction de GameEvaluator
+    return GameEvaluator::calculateRemainingDamagePotential(game, player);
+}
+
+int HeuristicAI::calculateMaxPotentialCombat(Game& game, Player& player) {
+    int totalCombat = player.getAtk(); // Combat actuel
     
-    // Ajouter les champions non activés
-    for (const auto& c : player.getChampionsEnJeu()) {
-        Champion* champ = dynamic_cast<Champion*>(c.get());
-        if (champ && !champ->getEstActiver()) {
-            potential += 3; // Estimation conservative
+    // Ajouter le combat potentiel de chaque carte en main
+    for (const auto& carte : player.getMain()) {
+        // Analyser les effets de la carte
+        for (const auto& effet : carte->getEffetsCarte()) {
+            if (dynamic_cast<EffetGainCombat*>(effet.get())) {
+                totalCombat += 3; // Estimation conservative
+            }
+            if (dynamic_cast<EffetGainCombatParChampion*>(effet.get())) {
+                int champCount = GameEvaluator::countChampions(player.getChampionsEnJeu());
+                totalCombat += champCount * 2;
+            }
+            if (dynamic_cast<EffetGainCombatParFaction*>(effet.get())) {
+                Faction faction = carte->getFaction();
+                if (faction != Faction::Aucun) {
+                    int factionCount = GameEvaluator::countCardsByFaction(player.getMain(), faction);
+                    factionCount += GameEvaluator::countCardsByFaction(player.getChampionsEnJeu(), faction);
+                    totalCombat += factionCount;
+                }
+            }
+        }
+        
+        // Ajouter les effets de faction
+        for (const auto& effet : carte->getEffetsFaction()) {
+            if (dynamic_cast<EffetGainCombat*>(effet.get())) {
+                totalCombat += 2;
+            }
         }
     }
     
-    return potential;
+    // Ajouter le combat potentiel des champions non activés
+    for (const auto& carte : player.getChampionsEnJeu()) {
+        Champion* champ = dynamic_cast<Champion*>(carte.get());
+        if (champ && !champ->getEstActiver()) {
+            for (const auto& effet : champ->getEffetsCarte()) {
+                if (dynamic_cast<EffetGainCombat*>(effet.get())) {
+                    totalCombat += 3;
+                }
+                if (dynamic_cast<EffetGainCombatParChampion*>(effet.get())) {
+                    int champCount = GameEvaluator::countChampions(player.getChampionsEnJeu());
+                    totalCombat += champCount * 2;
+                }
+            }
+        }
+    }
+    
+    return totalCombat;
+}
+
+bool HeuristicAI::shouldActivateOptionalEffect(const Effet* effet, Player& player, Game& game) {
+    if (!effet) return false;
+    
+    Player& opponent = game.getPlayers()[1 - playerId];
+    
+    // Toujours activer les effets positifs
+    if (dynamic_cast<const EffetGainCombat*>(effet)) return true;
+    if (dynamic_cast<const EffetGainGold*>(effet)) return true;
+    if (dynamic_cast<const EffetGainPV*>(effet)) return true;
+    if (dynamic_cast<const EffetPiocherCarte*>(effet)) return true;
+    
+    // Assommer champion: seulement si adversaire a des champions
+    if (dynamic_cast<const EffetAssomerChampion*>(effet)) {
+        return !opponent.getChampionsEnJeu().empty();
+    }
+    
+    // Défausser carte adversaire: seulement si adversaire a des cartes en main
+    if (dynamic_cast<const EffetDefausserCarteAdversaire*>(effet)) {
+        return !opponent.getMain().empty();
+    }
+    
+    // Sacrifice: évaluer si on a de mauvaises cartes
+    if (dynamic_cast<const EffetSacrifier*>(effet)) {
+        for (const auto& carte : player.getMain()) {
+            if (GameEvaluator::evaluateCardValue(carte.get()) < 5.0f) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    return true;
+}
+
+int HeuristicAI::chooseFromEffects(const std::vector<std::unique_ptr<Effet>>& effets, 
+                                   Player& player, Game& game) {
+    if (effets.empty()) return 0;
+    
+    Player& opponent = game.getPlayers()[1 - playerId];
+    int bestIndex = 0;
+    float bestScore = -1000.0f;
+    
+    for (size_t i = 0; i < effets.size(); ++i) {
+        const Effet* effet = effets[i].get();
+        float score = 0.0f;
+        
+        if (dynamic_cast<const EffetGainCombat*>(effet)) {
+            score = 15.0f;
+            if (player.getAtk() + 5 >= opponent.getHp()) {
+                score += 30.0f;
+            }
+        }
+        else if (dynamic_cast<const EffetGainGold*>(effet)) {
+            score = 12.0f;
+            if (player.getGold() < 8) {
+                score += 10.0f;
+            }
+        }
+        else if (dynamic_cast<const EffetGainPV*>(effet)) {
+            score = 10.0f;
+            if (player.getHp() < 25) {
+                score += 15.0f;
+            }
+        }
+        else if (dynamic_cast<const EffetPiocherCarte*>(effet)) {
+            score = 20.0f;
+        }
+        else if (dynamic_cast<const EffetAssomerChampion*>(effet)) {
+            score = opponent.getChampionsEnJeu().empty() ? 5.0f : 25.0f;
+        }
+        else if (dynamic_cast<const EffetDefausserCarteAdversaire*>(effet)) {
+            score = opponent.getMain().empty() ? 5.0f : 18.0f;
+        }
+        else {
+            score = 10.0f;
+        }
+        
+        if (score > bestScore) {
+            bestScore = score;
+            bestIndex = static_cast<int>(i);
+        }
+    }
+    
+    logDecision("Choix d'effet: index " + std::to_string(bestIndex) + 
+               " (score: " + std::to_string(bestScore) + ")");
+    
+    return bestIndex;
 }
 
 float HeuristicAI::estimateCardPlayOutcome(const Carte* carte, Game& game, Player& player) {
@@ -494,9 +753,10 @@ bool HeuristicAI::shouldPrioritizeAttack(Game& game, Player& player, Player& opp
     return player.getAtk() >= opponent.getHp();
 }
 
-float HeuristicAI::evaluateOpponentThreat(const Player& opponent) {
+float HeuristicAI::evaluateOpponentThreat(Player& opponent) {
     float threat = 0.0f;
     
+    // Utiliser evaluateBoardControl pour évaluer la menace du board
     // Plus l'adversaire a de champions, plus il est menaçant
     threat += static_cast<float>(opponent.getChampionsEnJeu().size()) * 10.0f;
     

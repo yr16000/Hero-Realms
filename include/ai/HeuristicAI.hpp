@@ -9,7 +9,6 @@
 #include <vector>
 #include <memory>
 
-// Forward declarations
 class Game;
 class Player;
 class Carte;
@@ -46,14 +45,12 @@ private:
     };
 
 public:
-    explicit HeuristicAI(int playerId, bool verbose = false);
+    HeuristicAI(int playerId, bool verbose = false);
     ~HeuristicAI() = default;
-
-    // === Méthodes principales ===
     
-    void playTurn(Game& game, Player& player);
-    int decideCardToPlay(Game& game, Player& player);
-    int decideCardToBuy(Game& game, Player& player);
+    void playTour(Game& game, Player& player);
+    int decideCardPlay(Game& game, Player& player);
+    int decideCardBuy(Game& game, Player& player);
     int decideAttackTarget(Game& game, Player& player, Player& opponent);
     int decideChampionToActivate(Game& game, Player& player);
     Carte* decideCardToSacrifice(Game& game, Player& player);
@@ -63,8 +60,6 @@ public:
     int getPlayerId() const { return playerId; }
 
 private:
-    // === Méthodes d'aide à la décision ===
-    
     /**
      * Évalue toutes les cartes de la main et retourne l'ordre optimal de jeu.
      * @return Vecteur d'indices triés par priorité de jeu
@@ -103,18 +98,6 @@ private:
     float scorePurchase(const Carte* carte, Game& game, Player& player);
 
     /**
-     * Détermine la stratégie d'achat actuelle (agressif, control, économie).
-     */
-    enum class PurchaseStrategy {
-        AGGRESSIVE,   // Favorise les dégâts et le tempo
-        CONTROL,      // Favorise les champions et la défense
-        ECONOMIC,     // Favorise l'économie et le cycle de cartes
-        BALANCED      // Approche équilibrée
-    };
-    
-    PurchaseStrategy determinePurchaseStrategy(Game& game, Player& player, Player& opponent);
-
-    /**
      * Évalue si on devrait garder des ressources pour le prochain tour.
      */
     bool shouldSaveResources(Game& game, Player& player);
@@ -122,17 +105,41 @@ private:
     /**
      * Compte le nombre de cartes d'un certain type dans la main.
      */
-    int countCardsInHand(const Player& player, TypeCarte type);
+    int countCardsInHand(Player& player, TypeCarte type);
 
     /**
      * Vérifie si une faction est dominante dans le deck du joueur.
      */
-    bool hasFactionDominance(const Player& player, Faction faction);
+    bool hasFactionDominance(Player& player, Faction faction);
 
     /**
      * Calcule le potentiel de dégâts restant dans la main.
      */
     int calculateRemainingDamagePotential(Game& game, Player& player);
+
+    /**
+     * Calcule le combat maximum possible ce tour (main + champions non activés).
+     * @return Combat potentiel maximum
+     */
+    int calculateMaxPotentialCombat(Game& game, Player& player);
+
+    /**
+     * Décide si on doit activer un effet optionnel.
+     * @param effet L'effet optionnel
+     * @param player Le joueur
+     * @param game Le jeu
+     * @return true si on active
+     */
+    bool shouldActivateOptionalEffect(const Effet* effet, Player& player, Game& game);
+
+    /**
+     * Choisit le meilleur effet parmi un choix.
+     * @param effets Liste des effets possibles
+     * @param player Le joueur
+     * @param game Le jeu
+     * @return Index de l'effet choisi
+     */
+    int chooseFromEffects(const std::vector<std::unique_ptr<Effet>>& effets, Player& player, Game& game);
 
     /**
      * Log une décision si le mode verbose est activé.
@@ -153,7 +160,7 @@ private:
     /**
      * Évalue la menace que représente l'adversaire.
      */
-    float evaluateOpponentThreat(const Player& opponent);
+    float evaluateOpponentThreat(Player& opponent);
 };
 
 #endif // HEURISTICAI_HPP

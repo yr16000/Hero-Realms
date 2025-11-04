@@ -89,7 +89,7 @@ GameEvaluator::Evaluation GameEvaluator::evaluateGameState(
     eval.boardScore = evaluateBoardControl(player, opponent) * BOARD_WEIGHT;
 
     // 3. Évaluation de la main actuelle
-    eval.handScore = evaluateHandPotential(player) * HAND_WEIGHT;
+    eval.handScore = evaluateHandPotential(player, game) * HAND_WEIGHT;
 
     // 4. Évaluation de la qualité du deck
     eval.deckQualityScore = evaluateDeckQuality(player) * DECK_QUALITY_WEIGHT;
@@ -143,12 +143,17 @@ float GameEvaluator::evaluateCardValue(const Carte* carte) {
         }
     } else if (type == TypeCarte::Action) {
         value = ACTION_BASE_VALUE;
-        if(static_cast<const Action*>(carte)->get) {
-            value += 5.0f; // Bonus pour les actions multi-usage
+        if(static_cast<const Action*>(carte)->getEffetsSacrifice().size() > 0) {
+            value += 2.0f; // Bonus pour les sacrifices
+        }
+    } else if (type == TypeCarte::Objet) {
+        value = OBJECT_BASE_VALUE;
+        if(static_cast<const Objet*>(carte)->getEffetsSacrifice().size() > 0) {
+            value += 2.0f; // Bonus pour les sacrifices
         }
     }
 
-    // Bonus basé sur le coût (cartes plus chères sont généralement meilleures)
+    // Bonus basé sur le cout (cartes plus cheres sont généralement meilleures)
     int cost = carte->getCout();
     value += cost * 3.0f;
 
@@ -183,7 +188,7 @@ float GameEvaluator::evaluateCardInContext(const Carte* carte, Player& player, G
         // Bonus si on a deja des cartes de cette faction
         int factionCount = player.getFactionCount(faction);
         if (factionCount > 0) {
-            contextBonus += factionCount * 5.0f;
+            contextBonus += factionCount * 2.0f;
         }
     }
 
@@ -266,10 +271,6 @@ float GameEvaluator::evaluateBoardControl(Player& player, Player& opponent) {
             if (champ->getEstGarde()) {
                 control += 15.0f; // Grande valeur pour les gardes
             }
-            // Bonus pour les champions non-activés (peuvent encore agir)
-            if (!champ->getEstActiver()) {
-                control += 5.0f;
-            }
         }
     }
 
@@ -307,21 +308,21 @@ float GameEvaluator::evaluateSynergy(Player& player) {
         }
     }
 
-    // Bonus pour chaque faction concentrée (plus de 2 cartes)
+    // Bonus pour chaque faction concentrée (plus de 3 cartes)
     for (const auto& pair : factionCounts) {
-        if (pair.second >= 2) {
-            synergy += (pair.second - 1) * 8.0f; // Bonus croissant
+        if (pair.second >= 3) {
+            synergy += (pair.second - 1) * 8.0f;
         }
     }
 
     return synergy;
 }
 
-float GameEvaluator::evaluateHandPotential(Player& player) {
+float GameEvaluator::evaluateHandPotential(Player& player, Game& game) {
     float potential = 0.0f;
 
     for (const auto& c : player.getMain()) {
-        potential += evaluateCardValue(c.get()) * 0.3f;
+        potential += evaluateCardInContext(c.get(), player, game) * 0.3f;
     }
 
     // Bonus si main équilibrée (champions + actions)
@@ -344,12 +345,20 @@ float GameEvaluator::evaluateHandPotential(Player& player) {
 float GameEvaluator::evaluateChampionPriority(Player& player, Player& opponent) {
     float priority = 0.0f;
 
+    // Utiliser evaluateBoardControl pour analyser la situation du board
+    float boardControl = evaluateBoardControl(player, opponent);
+    
     // Si on a peu de champions en jeu, priorité haute
-    int ourChampions = static_cast<int>(player.getChampionsEnJeu().size());
-    int theirChampions = static_cast<int>(opponent.getChampionsEnJeu().size());
+    int ourChampions = countChampions(player.getChampionsEnJeu());
+    int theirChampions = countChampions(opponent.getChampionsEnJeu());
 
     if (ourChampions < 2) {
         priority += 15.0f;
+    }
+    
+    // Si on perd le contrôle du board, augmenter la priorité
+    if (boardControl < 0) {
+        priority += std::abs(boardControl) * 0.5f;
     }
     
     if (theirChampions > ourChampions) {
@@ -395,13 +404,23 @@ bool GameEvaluator::isStartingCard(const Carte* carte) {
     std::string nom = carte->getNom();
     
     // Vérifier si c'est une des cartes de départ typiques
-    return (nom.find("Dague") != std::string::npos || 
-            nom.find("Dagger") != std::string::npos ||
-            nom.find("Or") != std::string::npos || 
+    return (nom.find("Dagger") != std::string::npos ||
             nom.find("Gold") != std::string::npos ||
-            nom.find("Rubis personnel") != std::string::npos ||
-            nom.find("Personal Ruby") != std::string::npos ||
-            carte->getCout() == 0); // Les cartes gratuites sont souvent des starters
+            nom.find("Ruby") != std::string::npos ||
+            nom.find("Shortsword") != std::string::npos ||
+            carte->getCout() == 0);
+}
+
+int GameEvaluator::countCardsByType(
+    const std::vector<std::unique_ptr<Carte>>& cards, TypeCarte type) {
+    
+    int count = 0;
+    for (const auto& c : cards) {
+        if (c && c->getType() == type) {
+            count++;
+        }
+    }
+    return count;
 }
 
 int GameEvaluator::countCardsByFaction(
@@ -417,13 +436,7 @@ int GameEvaluator::countCardsByFaction(
 }
 
 int GameEvaluator::countChampions(const std::vector<std::unique_ptr<Carte>>& cards) {
-    int count = 0;
-    for (const auto& c : cards) {
-        if (c && c->getType() == TypeCarte::Champion) {
-            count++;
-        }
-    }
-    return count;
+    return countCardsByType(cards, TypeCarte::Champion);
 }
 
 int GameEvaluator::getTotalCardValue(const std::vector<std::unique_ptr<Carte>>& cards) {
@@ -434,4 +447,30 @@ int GameEvaluator::getTotalCardValue(const std::vector<std::unique_ptr<Carte>>& 
         }
     }
     return total;
+}
+
+bool GameEvaluator::hasFactionDominante(Player& player, Faction faction) {
+    if (faction == Faction::Aucun) return false;
+    
+    // Compter dans la main et les champions en jeu
+    int count = 0;
+    count += countCardsByFaction(player.getMain(), faction);
+    count += countCardsByFaction(player.getChampionsEnJeu(), faction);
+    
+    return count >= 3;
+}
+
+int GameEvaluator::calculateRemainingDamagePotential(Game& game, Player& player) {
+    int potential = player.getAtk();
+    
+    // Ajouter estimation des champions non activés (utilise le contrôle du board)
+    for (const auto& c : player.getChampionsEnJeu()) {
+        Champion* champ = dynamic_cast<Champion*>(c.get());
+        if (champ && !champ->getEstActiver()) {
+            // Estimation basée sur la valeur de la carte
+            potential += static_cast<int>(evaluateCardValue(champ) * 0.1f);
+        }
+    }
+    
+    return potential;
 }

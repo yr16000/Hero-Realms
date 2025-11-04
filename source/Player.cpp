@@ -55,7 +55,7 @@ int Player::getFactionCount(Faction f) const{
 void Player::acheterCarte(Game& game){
 	// Let the player choose an index or 'F' to buy a Fire Gem. Use getline to
 	// avoid mixing operator>> with getline in the main loop.
-	int visible = game.getVisibleMarketSize();
+	int visible = game.getMarketSize();
 	std::cout << "Entrez l'index de la carte à acheter (1-" << visible << ") ou F pour gemme de feu: ";
 	std::string line;
 	std::getline(std::cin, line);
