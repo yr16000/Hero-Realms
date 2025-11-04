@@ -59,109 +59,59 @@ public:
     void setVerbose(bool v) { verbose = v; }
     int getPlayerId() const { return playerId; }
 
-    /**
-     * Choisit le meilleur effet parmi un choix.
-     * @param effets Liste des effets possibles
-     * @param player Le joueur
-     * @param game Le jeu
-     * @return Index de l'effet choisi
-     */
+    // Choisit un effet parmi une liste d'effets en fonction du contexte du jeu.
     int chooseFromEffects(const std::vector<std::unique_ptr<Effet>>& effets, Player& player, Game& game);
 
-    /**
-     * Décide si on doit activer un effet optionnel.
-     * @param effet L'effet optionnel
-     * @param player Le joueur
-     * @param game Le jeu
-     * @return true si on active
-     */
+    // Décide s'il faut activer un effet optionnel d'une carte.
     bool shouldActivateOptionalEffect(const Effet* effet, Player& player, Game& game);
 
 private:
-    /**
-     * Évalue toutes les cartes de la main et retourne l'ordre optimal de jeu.
-     * @return Vecteur d'indices triés par priorité de jeu
-     */
+    // Évalue l'ordre optimal pour jouer les cartes en main et retourne les indices triés par ordre de priorité.
     std::vector<int> evaluatePlayOrder(Game& game, Player& player);
 
-    /**
-     * Évalue toutes les options d'achat disponibles.
-     * @return Vecteur d'évaluations d'achats triées
-     */
+    // Évalue les options d'achat disponibles et retourne les évaluations triées.
     std::vector<ActionEvaluation> evaluatePurchaseOptions(Game& game, Player& player);
 
-    /**
-     * Évalue s'il faut acheter une carte maintenant ou attendre.
-     * @param bestPurchase La meilleure option d'achat disponible
-     * @return true si on devrait acheter, false si attendre
-     */
+    // Détermine si l'achat doit être effectué immédiatement ou attendre et retourne un booléen.
     bool shouldPurchaseNow(Game& game, Player& player, const ActionEvaluation& bestPurchase);
 
-    /**
-     * Évalue chaque champion en jeu pour décider lequel activer.
-     * @return Vecteur d'évaluations triées
-     */
+    // Évalue les activations possibles des champions en jeu et retourne les évaluations triées.
     std::vector<ActionEvaluation> evaluateChampionActivations(Game& game, Player& player);
 
-    /**
-     * Calcule le score d'une carte à jouer dans le contexte actuel.
-     * Prend en compte : effets faction, synergies, ressources actuelles, etc.
-     */
+    // Évalue les cibles d'attaque possibles et retourne les évaluations triées.
     float scoreCardPlay(const Carte* carte, Game& game, Player& player);
 
-    /**
-     * Calcule le score d'achat d'une carte.
-     * Prend en compte : valeur, synergie, stratégie long-terme, etc.
-     */
+    // Évalue l'achat potentiel d'une carte dans le contexte actuel en prenant en compte divers facteurs.
     float scorePurchase(const Carte* carte, Game& game, Player& player);
 
-    /**
-     * Évalue si on devrait garder des ressources pour le prochain tour.
-     */
+    // Évalue si on devrait garder des ressources pour le prochain tour.
     bool shouldSaveResources(Game& game, Player& player);
 
-    /**
-     * Compte le nombre de cartes d'un certain type dans la main.
-     */
+    // Compte le nombre de cartes d'un type spécifique dans la main du joueur.
     int countCardsInHand(Player& player, TypeCarte type);
 
-    /**
-     * Vérifie si une faction est dominante dans le deck du joueur.
-     */
+    // Vérifie si une faction est dominante dans le deck du joueur.
     bool hasFactionDominance(Player& player, Faction faction);
 
-    /**
-     * Calcule le potentiel de dégâts restant dans la main.
-     */
+    // Calcule le potentiel de dégâts restant dans la main.
     int calculateRemainingDamagePotential(Game& game, Player& player);
 
-    /**
-     * Calcule le combat maximum possible ce tour (main + champions non activés).
-     * @return Combat potentiel maximum
-     */
+    // Calcule le potentiel maximum de combat que le joueur peut générer ce tour.
     int calculateMaxPotentialCombat(Game& game, Player& player);
 
 
-    /**
-     * Log une décision si le mode verbose est activé.
-     */
+    // Log une décision si le mode verbose est activé.
     void logDecision(const std::string& decision);
 
-    /**
-     * Simule mentalement le jeu d'une carte et évalue le résultat.
-     * (Simplifié - pas de vraie simulation pour l'instant)
-     */
+    // Simule mentalement le jeu d'une carte et évalue le résultat.
+    // (Simplifié - pas de vraie simulation pour l'instant)
     float estimateCardPlayOutcome(const Carte* carte, Game& game, Player& player);
 
-    /**
-     * Détermine s'il faut prioriser l'attaque ou l'achat ce tour.
-     */
+    // Détermine s'il faut prioriser l'attaque ou l'achat ce tour.
     bool shouldPrioritizeAttack(Game& game, Player& player, Player& opponent);
 
-    /**
-     * Évalue la menace que représente l'adversaire.
-     */
+    // Évalue la menace que représente l'adversaire.
     float evaluateOpponentThreat(Player& opponent);
 };
 
-#endif // HEURISTICAI_HPP
+#endif 

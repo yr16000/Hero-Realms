@@ -3,6 +3,7 @@
 #include "../include/Game.hpp"
 #include <iostream>
 
+//Constructeur de la classe Champion
 Champion::Champion(const std::string& nom, int cout, const Faction faction,
     int pv, bool estGarde,
     std::vector<std::unique_ptr<Effet>>&& effetsCarte,
@@ -13,19 +14,19 @@ Champion::Champion(const std::string& nom, int cout, const Faction faction,
       pv(pv), estGarde(estGarde) {}
 
 void Champion::activer(Player& proprietaire, Game& game) {
-    // If this champion is already activated for this turn, do nothing.
+    // Si ce champion est déjà activé pour ce tour, ne rien faire.
     if (getEstActiver()) {
         std::cout << "Champion deja activé: " << getNom() << "\n";
         return;
     }
-    // Ensure this champion is in the owner's championsEnJeu (in play).
+    // S'assurer que le champion est en jeu (sinon le déplacer de la main vers le jeu)
     bool inPlay = false;
     for (const auto &ptr : proprietaire.getChampionsEnJeu()){
         if (ptr.get() == this) { inPlay = true; break; }
     }
 
     if (!inPlay) {
-        // Try to find and move from hand
+        // Essayer de trouver et de déplacer depuis la main
         auto &main = proprietaire.getMain();
         for (size_t i = 0; i < main.size(); ++i) {
             if (main[i].get() == this) {
@@ -38,12 +39,12 @@ void Champion::activer(Player& proprietaire, Game& game) {
     }
 
     std::cout << "Activer champion: " << getNom() << "\n";
-    // Mark this card as the currently activating card so effects can detect the source
+    // Marquer cette carte comme la carte actuellement activée afin que les effets puissent détecter la source
     game.setCarteEnActivation(this);
     for(const auto& effet : effetCarte) {
         effet->activerEffet(proprietaire, game);
     }
-    // Clear activation context
+    // Effacer le contexte d'activation
     game.setCarteEnActivation(nullptr);
 
 

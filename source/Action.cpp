@@ -11,7 +11,7 @@ Action::Action(const std::string& nom, int cout, const Faction faction,
     : Carte(nom, cout, faction, TypeCarte::Action, std::move(effetsCarte), std::move(effetsFaction), typeSecondaire, typeTertiaire),
       effetSacrifice(std::move(effetsSacrifice)) {
     if(sacrificeFlag) {
-        // handle sacrifice flag if needed
+        // gérer le flag de sacrifice si nécessaire
     }
 }
 
@@ -19,13 +19,13 @@ Action::~Action() = default;
 
 void Action::activer(Player& proprietaire, Game& game) {
     std::cout << "Activer action: " << getNom() << "\n";
-    // set activation context so effects can detect the source
+    // mettre cette carte comme la carte actuellement activée
     game.setCarteEnActivation(this);
     for (const auto& effet : effetCarte) {
         if (effet) effet->activerEffet(proprietaire, game);
     }
 
-    // clear activation context
+    // effacer le contexte d'activation
     game.setCarteEnActivation(nullptr);
 
     int countAtStart = proprietaire.getFactionCount(this->getFaction());
@@ -42,7 +42,7 @@ const std::vector<std::unique_ptr<Effet>>& Action::getEffetsSacrifice() const {
 }
 
 void Action::onSacrifice(Player& proprietaire, Game& game){
-    // when this Action is sacrificed, run its sacrifice effects
+    //quand l'action est sacrifiée, activer les effets de sacrifice
     for (const auto &e : effetSacrifice) {
         if (e) e->activerEffet(proprietaire, game);
     }

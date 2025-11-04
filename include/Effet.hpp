@@ -2,7 +2,7 @@
 #define EFFET_HPP
 #include <string>
 #include <memory>
-// Forward declarations to avoid circular includes
+
 class Player;
 class Game;
 

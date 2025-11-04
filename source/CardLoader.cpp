@@ -6,7 +6,7 @@
 #include "../include/Objet.hpp"
 #include "../include/Enums.h"
 
-// tous les effets que tu m'as passés
+// tous les effets 
 #include "../include/effets/EffetGainGold.hpp"
 #include "../include/effets/EffetGainCombat.hpp"
 #include "../include/effets/EffetPiocherCarte.hpp"
@@ -416,11 +416,9 @@ for (int i = 0; i < 2; ++i) {
 
 
 
-        //
-    // ============================================================
+    
     // 2. GUILD
-    // ============================================================
-    //
+    
     // Base Set	1	Borg, Ogre Mercenary
     // "{Expend}: {Gain 4 combat}"	Champion ◆ Ogre Warrior	Guild	6	6 Guard
     {
@@ -1142,11 +1140,9 @@ for (int i = 0; i < 2; ++i) {
         cards.push_back(std::move(c));
     }
 
-        //
-    // ============================================================
+    
     // 4. WILD
-    // ============================================================
-    //
+    
 
     // Base Set	1	Broelyn, Loreweaver
     // "{Expend}: {Gain 2 gold}

@@ -41,10 +41,10 @@ int Console::lireChoix(const std::string& prompt, int min, int max) {
 const char* Console::colorFor(Faction f) {
     using namespace Ansi;
     switch (f) {
-        case Faction::Imperiale: return YELLOW; // 👑 Impériale
-        case Faction::Guilde:    return BLUE;   // 💰 Guilde
-        case Faction::Necros:    return RED;    // 💀 Nécros
-        case Faction::Sauvage:   return GREEN;  // 🌿 Sauvage
+        case Faction::Imperiale: return YELLOW; 
+        case Faction::Guilde:    return BLUE;   
+        case Faction::Necros:    return RED;   
+        case Faction::Sauvage:   return GREEN;  
         default:                 return RESET;
     }
 }
@@ -72,7 +72,7 @@ void Console::afficherPlateau(Game& game, Player& moi, Player& adv, bool pauseAp
     ro.perRow = 2;          // 2 cartes côte à côte
     ro.showIndices = false; // pas d’indices sur le plateau
 
-    // ----- Champions du joueur -----
+    // Champions du joueur
     auto& mesChamps = moi.getChampionsEnJeu();
     std::cout << "🛡️  Vos champions :\n";
     if (mesChamps.empty()) {
@@ -92,7 +92,7 @@ void Console::afficherPlateau(Game& game, Player& moi, Player& adv, bool pauseAp
         }
     }
 
-    // ----- Champions adverses -----
+    // Champions de l’adversaire
     auto& advChamps = adv.getChampionsEnJeu();
     std::cout << "🛡️  Champions adverses :\n";
     if (advChamps.empty()) {
@@ -119,7 +119,7 @@ void Console::afficherPlateau(Game& game, Player& moi, Player& adv, bool pauseAp
     if (pauseApres) attendreEntree();
 }
 
-
+// Menu principal
 void Console::afficherMenu(Game& game) {
     using namespace Ansi;
     std::cout << "\n" << GREEN << BOLD << "Que voulez-vous faire ?\n" << RESET;
@@ -169,7 +169,7 @@ void Console::jouerUneCarte(Player& p, Game& game) {
         }
     }
 
-    // --- Choix utilisateur (inchangé) ---
+    // Choix utilisateur (inchangé)
     int c = lireChoix("Carte à jouer", 1, (int)hand.size());
     if (c == 0) return;
 
@@ -313,6 +313,7 @@ void Console::sacrifierUneCarte(Player& p, Game& game) {
     attendreEntree();
 }
 
+// Acheter au marché
 void Console::acheterAuMarche(Player& p, Game& game) {
     game.afficherMarche();
 
@@ -325,6 +326,7 @@ void Console::acheterAuMarche(Player& p, Game& game) {
     attendreEntree();
 }
 
+// Attaquer
 void Console::attaquer(Player& p, Player& adv, Game& /*game*/) {
     auto& advChamps = adv.getChampionsEnJeu();
 
@@ -367,7 +369,7 @@ void Console::attaquer(Player& p, Player& adv, Game& /*game*/) {
 
 void Console::voirDefausse(Player& p, Game& /*game*/) {
     std::cout << "\n";
-    p.afficherDefausse();  // ⬅️ réutilise la méthode de Player
+    p.afficherDefausse(); 
     attendreEntree();
 }
 

@@ -2,7 +2,7 @@
 #define ENUMS_H
 
 #include <string>
-
+// fichier pour les énumérations utilisées dans le jeu
 enum class TypeCarte { 
     Champion,
     Action, 

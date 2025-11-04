@@ -36,7 +36,7 @@ static const char* colorForFaction(Faction f) {
     }
 }
 
-/* ---------------- UTF-8 + ANSI helpers ---------------- */
+// Calcule la largeur d'affichage en tenant compte des séquences ANSI
 static int utf8DisplayWidthAnsi(const std::string& s) {
     int w = 0;
     for (size_t i = 0; i < s.size();) {
@@ -105,7 +105,7 @@ std::vector<std::string> CardRenderer::wrapText(const std::string& text, int max
     return res;
 }
 
-/* ---------------- Rendu 1 carte ---------------- */
+// Rendu d'une seule carte
 std::string CardRenderer::render(const Carte& carte, const Options& opts) {
     using namespace Ansi;
     const int inner = opts.width - 2;
@@ -265,7 +265,7 @@ std::vector<std::string> CardRenderer::renderToLines(const Carte& carte, const O
     return lines;
 }
 
-/* Concaténer N colonnes — ANSI/UTF-8 safe pour les cartes hautes */
+/* Concaténer N colonnes */
 static int visibleWidthOfCardLine(const std::string& line) {
     return utf8DisplayWidthAnsi(line);
 }

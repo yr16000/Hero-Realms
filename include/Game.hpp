@@ -4,7 +4,6 @@
 #include <vector>
 #include <memory>
 
-// Forward declaration
 class HeuristicAI;
 
 class Game{
@@ -16,11 +15,11 @@ class Game{
         std::vector<std::unique_ptr<Carte>> deckBase1;
         std::vector<std::unique_ptr<Carte>> deckBase2;
         std::vector<std::unique_ptr<Carte>> ecartees;
-        // Pointer to the card currently activating its effects (or nullptr)
+        // pointant la carte actuellement en cours d'activation
         Carte* carteEnActivation = nullptr;
         bool godMode = false;
-        
-        // AI Support
+
+        // Support IA
         std::unique_ptr<HeuristicAI> aiPlayer;
         int aiPlayerIndex = -1; // -1 = pas d'IA, 0 ou 1 = index du joueur IA
     public:
@@ -39,19 +38,19 @@ class Game{
         void afficherEtatJoueurs() const;
         bool estTerminee() const;
         void afficherGagnant() const;
-        // God mode controls
+        // God mode methodes
         void setGodMode(bool val);
         void toggleGodMode();
         bool isGodMode() const;
-    // number of visible purchase options (marche + pioche if godMode)
+    // nombre d'options d'achat visibles (marche + pioche si godMode)
         int getMarketSize() const;
         const std::vector<std::unique_ptr<Carte>>& getMarche() const;
-        // Activation context helpers
+        // Carte en activation
         void setCarteEnActivation(Carte* c);
         Carte* getCarteEnActivation() const;
         const Carte* getModeleGemmeDeFeu() const;
-    
-    // AI Methods
+
+    // Méthodes IA
     void setAIPlayer(std::unique_ptr<HeuristicAI> ai, int playerIndex);
     HeuristicAI* getAIPlayer() const;
     int getAIPlayerIndex() const;

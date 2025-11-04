@@ -2,6 +2,7 @@
 #include <iostream>
 #include "../include/ui/CardRenderer.hpp"
 
+// Constructeur et destructeur de la classe Carte
 Carte::Carte(const std::string& nom, int cout, const Faction faction, TypeCarte typePrimaire,
 	std::vector<std::unique_ptr<Effet>>&& effetsCarte,
 	std::vector<std::unique_ptr<Effet>>&& effetsFaction,
@@ -11,6 +12,7 @@ Carte::Carte(const std::string& nom, int cout, const Faction faction, TypeCarte 
 	  effetCarte(std::move(effetsCarte)), effetFaction(std::move(effetsFaction)), utilisee(false) {}
 
 Carte::~Carte() = default;
+
 
 void Carte::resetUtilisation() { utilisee = false; }
 
@@ -35,7 +37,7 @@ void Carte::afficherCarte() const {
 }
 
 void Carte::onSacrifice(Player& /*proprietaire*/, Game& /*game*/) {
-	// default: nothing
+	// Comportement par défaut : ne rien faire
 }
 
 Faction Carte::getFaction() const {

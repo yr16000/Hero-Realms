@@ -3,6 +3,7 @@
 #include "../include/Game.hpp"
 #include <iostream>
 
+//Constructeur de la classe Objet
 Objet::Objet(const std::string& nom,
              int cout,
              const Faction faction,
@@ -17,6 +18,7 @@ Objet::Objet(const std::string& nom,
             typeSecondaire, typeTertiaire),
       effetsSacrifice(std::move(effetsSacrifice)) {}
 
+// Méthode d'activation de l'objet
 void Objet::activer(Player& proprietaire, Game& game) {
     std::cout << "Activation de l'objet : " << getNom() << "\n";
     game.setCarteEnActivation(this);
@@ -29,10 +31,13 @@ void Objet::activer(Player& proprietaire, Game& game) {
     game.setCarteEnActivation(nullptr);
 }
 
+// getter pour les effets de sacrifice
 const std::vector<std::unique_ptr<Effet>>& Objet::getEffetsSacrifice() const {
     return effetsSacrifice;
 }
 
+
+// Méthode appelée lors du sacrifice de l'objet
 void Objet::onSacrifice(Player& proprietaire, Game& game) {
     std::cout << "Sacrifice de l'objet : " << getNom() << "\n";
     for (const auto& effet : effetsSacrifice) {

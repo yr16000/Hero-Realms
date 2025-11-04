@@ -7,7 +7,7 @@
 #include <memory>
 #include "Enums.h"
 
-// Forward declaration to avoid heavy includes in this header.
+
 class Carte;
 
 namespace CardLoader {
@@ -20,4 +20,4 @@ namespace CardLoader {
 
 }
 
-#endif // CARDLOADER_HPP
+#endif 

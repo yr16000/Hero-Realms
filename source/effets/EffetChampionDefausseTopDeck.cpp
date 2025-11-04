@@ -5,6 +5,7 @@
 
 EffetChampionDefausseTopDeck::EffetChampionDefausseTopDeck() : Effet("Expend: put a champion from discard on top of deck") {}
 
+// Remettre un champion de la défausse sur le dessus du deck
 void EffetChampionDefausseTopDeck::activerEffet(Player& proprietaire, Game& game){
     auto &def = proprietaire.getDefausse();
     proprietaire.afficherDefausse();
@@ -14,12 +15,12 @@ void EffetChampionDefausseTopDeck::activerEffet(Player& proprietaire, Game& game
             champsIdx.push_back(i);
         }
     }
-
+// Aucun champion dans la défausse
     if(champsIdx.empty()){
         std::cout << "Aucun champion dans la defausse.\n";
         return;
     }
-
+// Un seul champion dans la défausse
     if(champsIdx.size() == 1){
         size_t idx = champsIdx[0];
         std::cout << "Remettre sur le dessus du deck: " << def[idx]->getNom() << "\n";
@@ -27,7 +28,7 @@ void EffetChampionDefausseTopDeck::activerEffet(Player& proprietaire, Game& game
         def.erase(def.begin()+idx);
         return;
     }
-
+// Plusieurs champions dans la défausse
     for(size_t k=0;k<champsIdx.size();++k){
         size_t i = champsIdx[k];
         ui::CardRenderer::Options opts;

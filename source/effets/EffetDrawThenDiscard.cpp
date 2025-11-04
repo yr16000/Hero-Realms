@@ -19,9 +19,9 @@ void EffetDrawThenDiscard::activerEffet(Player& proprietaire, Game& game){
             std::cin >> choix;
         }
         proprietaire.getDefausse().push_back(std::move(proprietaire.getMain()[choix-1]));
-        // remove the moved-from card from hand
+        // supprimer de la main
         proprietaire.getMain().erase(proprietaire.getMain().begin() + (choix-1));
-        // decrement remaining discards
+        // décrémenter le nombre restant de défausses
         --n;
         if(n>0){
             std::cout << "Voulez-vous arrêter de défausser des cartes? (1=oui, 0=non): ";

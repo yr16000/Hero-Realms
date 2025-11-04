@@ -15,7 +15,7 @@ int main() {
     int joueurActif = 0;
     bool quitter = false;
     
-    // Demander si on veut jouer contre l'IA
+    // Choix du mode de jeu
     std::cout << "Hero Realms\n";
     std::cout << "1. ⚔️ Joueur vs Joueur\n";
     std::cout << "2. 🧠 Joueur vs IA Heuristique\n";
@@ -96,11 +96,11 @@ int main() {
             continue;
         }
 
-        // 🔹 En-tête + menu pour joueur humain
+        //  En-tête + menu pour joueur humain
         ui::Console::afficherHeader(game, p, adv);
         ui::Console::afficherMenu(game);
 
-        int choix = ui::Console::lireChoix("> Choix", 0, 9);  // 0=Quitter visible
+        int choix = ui::Console::lireChoix("> Choix", 0, 10); 
         switch (choix) {
             case 0: // Quitter
                 quitter = true; 

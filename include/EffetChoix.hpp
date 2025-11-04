@@ -3,7 +3,7 @@
 #include "Effet.hpp"
 #include <vector>
 #include <memory>
-
+// Effet permettant de choisir un effet parmi plusieurs
 class EffetChoix : public Effet{
     private:
         std::vector<std::unique_ptr<Effet>> choixEffets;

@@ -11,7 +11,7 @@
 #include "../include/ai/HeuristicAI.hpp"
 
 Game::Game(){
-    // create two players
+    // creer deux joueurs
     players.emplace_back(0);
     players.emplace_back(1);
 }
@@ -27,7 +27,6 @@ void Game::demarrerPartie(){
     std::cout << "Initialisation terminée. Demarrage de la partie\n";
 }
 
-// (DataLoader removed) 
 
 void Game::tourDeJeu(Player& joueur){
     std::cout << "Tour du joueur " << joueur.getId() << "\n";
@@ -101,11 +100,11 @@ Carte* Game::acheterCarte(int index, Player& acheteur){
         // debit du joueur
         acheteur.modiffGold(-prix);
     } else {
-        // in god mode, gold is unlimited: do not check or debit
+        // God mode: achat gratuit
         std::cout << "GodMode: achat gratuit autorisé.\n";
     }
 
-    // take ownership from appropriate container
+    // Prendre possession de la carte
     if (!fromPioche) {
         carteUptr = std::move(marche[index]);
         marche.erase(marche.begin() + index);
@@ -123,7 +122,7 @@ Carte* Game::acheterCarte(int index, Player& acheteur){
     Carte* cartePtr = carteUptr.get();
     acheteur.incrFactionCount(cartePtr->getFaction());
 
-    // decide destination based on godMode or player's flags and card type
+    // decide de la destination 
     if (godMode) {
         std::cout << "GodMode: carte acquise -> main directement.\n";
         acheteur.getMain().push_back(std::move(carteUptr));
@@ -161,7 +160,7 @@ Carte* Game::acheterGemmeDeFeu(Player& acheteur){
         std::cout << "Achat impossible : plus de gemmes de feu disponibles\n";
         return nullptr;}
 
-    // Simple purchase logic (no global modifiers): check funds, pay, transfer ownership
+    // Gestion des gemmes de feu
     Carte* cartePtr = gemmesDeFeu[0].get();
     int prix = cartePtr->getCout();
     if (!godMode) {
@@ -175,12 +174,12 @@ Carte* Game::acheterGemmeDeFeu(Player& acheteur){
         std::cout << "GodMode: achat gemme gratuit autorisé.\n";
     }
 
-    // take ownership
+    
     std::unique_ptr<Carte> carte = std::move(gemmesDeFeu[0]);
-    // remove from gemmesDeFeu
+    // supprimer de gemmesDeFeu
     gemmesDeFeu.erase(gemmesDeFeu.begin());
 
-    // decide destination based on godMode or player's flags
+    // destination achat GodMode
     if (godMode) {
         std::cout << "GodMode: gemme acquise -> main directement.\n";
         acheteur.getMain().push_back(std::move(carte));
@@ -201,7 +200,7 @@ Carte* Game::acheterGemmeDeFeu(Player& acheteur){
         return acheteur.getDeck().front().get();
     }
 
-    // Default: go to defausse
+    // Par default: aller en defausse
     std::cout << "Gemme de feu achetee et mise en defausse par defaut.\n";
     acheteur.getDefausse().push_back(std::move(carte));
     return acheteur.getDefausse().back().get();
@@ -212,7 +211,6 @@ void Game::ajouterCarteMarche(std::unique_ptr<Carte> carte){
 }
 
 void Game::melangerPioche(){
-    // naive shuffle
     std::random_device rd;
     std::mt19937 g(rd());
     std::shuffle(pioche.begin(), pioche.end(), g);
@@ -263,7 +261,7 @@ void Game::setGodMode(bool val) {
     godMode = val;
     std::cout << "GodMode " << (godMode ? "activé" : "désactivé") << "\n";
     if (godMode) {
-        // set each player to 1 HP
+        // mettre les PV de tous les joueurs à 1
         for (auto &p : players) {
             int current = p.getHp();
             if (current != 1) {
@@ -294,7 +292,7 @@ const std::vector<std::unique_ptr<Carte>>& Game::getMarche() const {
 }
 
 void Game::initialiserMarche() {
-    // Example initialization: add first 5 cards from pioche to marche
+    //Extraire les 5 premières cartes de la pioche pour le marché
     for (int i = 0; i < 5 && !pioche.empty(); ++i) {
         marche.push_back(std::move(pioche.back()));
         pioche.pop_back();
@@ -318,7 +316,8 @@ void Game::initialiserDeckBase() {
     deckBase2.clear();
     player1.melangerDefausse();
     player2.melangerDefausse();
-    player1.piocherCarte(5);
+    //premier joueur pioche 3 cartes, second joueur pioche 5 cartes au début de la partie
+    player1.piocherCarte(3);
     player2.piocherCarte(5);
 }
 
@@ -333,7 +332,7 @@ void Game::initialiserGemmesDeFeu() {
     gemmesDeFeu = CardLoader::loadFireGems();
 }
 
-// AI Methods
+// Methodes IA
 void Game::setAIPlayer(std::unique_ptr<HeuristicAI> ai, int playerIndex) {
     if (playerIndex >= 0 && playerIndex < static_cast<int>(players.size())) {
         aiPlayer = std::move(ai);

@@ -15,9 +15,7 @@
  */
 class GameEvaluator {
 public:
-    /**
-     * Structure contenant l'évaluation détaillée d'un état de jeu.
-     */
+    // Structure détaillée pour l'évaluation du jeu
     struct Evaluation {
         float totalScore = 0.0f;
         float hpScore = 0.0f;
@@ -30,123 +28,51 @@ public:
         std::string toDebugString() const;
     };
 
-    /**
-     * Évalue l'état du jeu du point de vue d'un joueur.
-     * Plus le score est élevé, meilleure est la position.
-     * @param game L'état du jeu actuel
-     * @param player Le joueur à évaluer
-     * @param opponent L'adversaire
-     * @return Structure d'évaluation détaillée
-     */
+    // Évalue l'état actuel du jeu pour un joueur donné et retourne une structure d'évaluation détaillée.
     static Evaluation evaluateGameState(Game& game, Player& player, Player& opponent);
 
-    /**
-     * Évalue la valeur intrinsèque d'une carte (indépendamment du contexte).
-     * @param carte La carte à évaluer
-     * @return Score de la carte (généralement entre 0 et 100)
-     */
+    // Évalue la valeur intrinsèque d'une carte (sans contexte) et retourne un score.
     static float evaluateCardValue(const Carte* carte);
 
-    /**
-     * Évalue la valeur d'une carte dans le contexte actuel du jeu.
-     * @param carte La carte à évaluer
-     * @param player Le joueur qui possède la carte
-     * @param game L'état du jeu
-     * @return Score contextuel de la carte
-     */
+    // Évalue la valeur d'une carte dans le contexte actuel du jeu et retourne un score.
     static float evaluateCardInContext(const Carte* carte, Player& player, Game& game);
 
-    /**
-     * Évalue la qualité du deck d'un joueur.
-     * @param player Le joueur dont on évalue le deck
-     * @return Score de qualité du deck
-     */
+    // Évalue la qualité globale du deck d'un joueur avec divers critères et retourne un score.
     static float evaluateDeckQuality(Player& player);
 
-    /**
-     * Évalue le contrôle du board (champions en jeu).
-     * @param player Le joueur à évaluer
-     * @param opponent L'adversaire
-     * @return Score de contrôle du board (positif = avantage, négatif = désavantage)
-     */
+    // Évalue le contrôle du board entre deux joueurs et retourne un score.
     static float evaluateBoardControl(Player& player, Player& opponent);
 
-    /**
-     * Évalue la synergie entre les cartes du joueur (factions, combos).
-     * @param player Le joueur à évaluer
-     * @return Score de synergie
-     */
+    // Évalue la synergie des cartes en jeu et en main.
     static float evaluateSynergy(Player& player);
 
-    /**
-     * Calcule le potentiel d'une main (combien de ressources peut générer la main).
-     * @param player Le joueur
-     * @return Score de potentiel
-     */
+    // Évalue le potentiel de la main actuelle du joueur.
     static float evaluateHandPotential(Player& player, Game& game);
 
-    /**
-     * Évalue l'urgence d'acheter des champions vs des actions.
-     * @param player Le joueur
-     * @param opponent L'adversaire
-     * @return Score positif = priorité champions, négatif = priorité actions/objets
-     */
+    // Évalue la priorité de recruter des champions pour un joueur.
     static float evaluateChampionPriority(Player& player, Player& opponent);
 
-    /**
-     * Évalue si une carte est bonne à sacrifier dans le contexte actuel.
-     * @param carte La carte candidate au sacrifice
-     * @param player Le joueur
-     * @return Score (plus élevé = meilleur sacrifice)
-     */
+    // Évalue la valeur d'un sacrifice de carte.
     static float evaluateSacrificeValue(const Carte* carte, Player& player);
 
     // Fonctions utilitaires pour l'analyse du jeu (utilisées par HeuristicAI et MCTS)
     
-    /**
-     * Compte le nombre de cartes d'un type spécifique.
-     * @param cards Liste de cartes à analyser
-     * @param type Type de carte recherché
-     * @return Nombre de cartes du type spécifié
-     */
+    // Compte le nombre de cartes d'un type spécifique.
     static int countCardsByType(const std::vector<std::unique_ptr<Carte>>& cards, TypeCarte type);
     
-    /**
-     * Compte le nombre de cartes d'une faction dans une liste.
-     * @param cards Liste de cartes
-     * @param faction Faction recherchée
-     * @return Nombre de cartes de cette faction
-     */
+    // Compte le nombre de cartes d'une faction spécifique.
     static int countCardsByFaction(const std::vector<std::unique_ptr<Carte>>& cards, Faction faction);
     
-    /**
-     * Compte le nombre de champions dans une liste.
-     * @param cards Liste de cartes
-     * @return Nombre de champions
-     */
+    // Compte le nombre de champions dans une liste de cartes.
     static int countChampions(const std::vector<std::unique_ptr<Carte>>& cards);
     
-    /**
-     * Calcule la valeur totale (coût) des cartes.
-     * @param cards Liste de cartes
-     * @return Somme des coûts
-     */
+    // Calcule la valeur totale des cartes dans une liste.
     static int getTotalCardValue(const std::vector<std::unique_ptr<Carte>>& cards);
     
-    /**
-     * Vérifie si une faction domine (au moins 3 cartes).
-     * @param player Le joueur
-     * @param faction La faction à vérifier
-     * @return true si domination de faction
-     */
+    // Détermine si le joueur a une faction dominante (plus de 50% des cartes).
     static bool hasFactionDominante(Player& player, Faction faction);
     
-    /**
-     * Calcule le potentiel de dégâts restant du joueur.
-     * @param game État du jeu
-     * @param player Le joueur
-     * @return Estimation des dégâts potentiels
-     */
+    // Calcule le potentiel de dégâts restants du joueur (combat en main + champions non activés).
     static int calculateRemainingDamagePotential(Game& game, Player& player);
 
 private:
@@ -173,4 +99,4 @@ private:
     static bool isStartingCard(const Carte* carte);
 };
 
-#endif // GAMEEVALUATOR_HPP
+#endif 
