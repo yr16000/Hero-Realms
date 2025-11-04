@@ -231,9 +231,25 @@ bool Game::estTerminee() const{
     return false;
 }
 
-void Game::afficherGagnant() const{
-    std::cout << "Aucun gagnant determiner\n";
+void Game::afficherGagnant() const {
+    int survivants = 0;
+    int gagnantId = -1;
+
+    for (const auto& p : players) {
+        if (p.estVivant()) {
+            survivants++;
+            gagnantId = p.getId();
+        }
+    }
+
+    if (survivants == 1) {
+        std::cout << "Le joueur " << (gagnantId + 1) << " a gagné la partie !\n";
+    } else {
+        // couvre : 0 survivants (double KO) ET >1 survivants (partie quittée/interrompue)
+        std::cout << "Match nul ! Aucun gagnant.\n";
+    }
 }
+
 
 void Game::setCarteEnActivation(Carte* c) {
     carteEnActivation = c;
