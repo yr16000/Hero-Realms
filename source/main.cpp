@@ -31,7 +31,7 @@ int main() {
         // Joueur vs IA
         ai = std::make_unique<HeuristicAI>(1, aiVerbose);
         game.setAIPlayer(std::move(ai), 1);
-        std::cout << "\n=== Joueur 1 (Vous) vs IA (Joueur 2) ===\n";
+        std::cout << "\n Joueur 1 (Vous) vs IA (Joueur 2) \n";
     }
 
     // Init tour du joueur 1
@@ -50,7 +50,7 @@ int main() {
         
         // Si c'est le tour de l'IA, la laisser jouer
         if (game.isAIPlayer(joueurActif)) {
-            std::cout << "\n=== Tour de l'IA (Joueur " << (joueurActif + 1) << ") ===\n";
+            std::cout << "\n Tour de l'IA (Joueur " << (joueurActif + 1) << ") \n";
             ui::Console::afficherPlateau(game, p, adv, false);
             
             HeuristicAI* ai = game.getAIPlayer();
