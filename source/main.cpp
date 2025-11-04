@@ -59,7 +59,7 @@ int main() {
             }
             
             // Afficher l'état après le tour de l'IA
-            std::cout << "\n=== Fin du tour de l'IA ===\n";
+            std::cout << "\n Fin du tour de l'IA \n";
             std::cout << "Appuyez sur Entree pour continuer...\n";
             std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
             

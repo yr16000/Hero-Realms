@@ -35,7 +35,7 @@ void HeuristicAI::playTour(Game& game, Player& player) {
             break;
         }
         std::string cardName = main[cardToPlay - 1]->getNom();
-        if (verbose) std::cout << "[IA]  -> " << cardName << std::endl;
+        if (verbose) std::cout << "[IA]  " << cardName << std::endl;
         // Put champions into play but do not activate now
         player.jouerCarteIA(cardToPlay, game, false);
     }
@@ -45,12 +45,18 @@ void HeuristicAI::playTour(Game& game, Player& player) {
     safetyCounter = 0;
     while (safetyCounter++ < MAX_ITERATIONS) {
         int champToActivate = decideChampionToActivate(game, player);
-        if (champToActivate == -1) break;
+        if (champToActivate == -1) {
+            break;
+        }
         auto& champs = player.getChampionsEnJeu();
         if (!(champToActivate >= 0 && static_cast<size_t>(champToActivate) < champs.size())) break;
         Champion* champ = dynamic_cast<Champion*>(champs[champToActivate].get());
         if (champ && !champ->getEstActiver()) {
-            if (verbose) std::cout << "[IA]  -> " << champ->getNom() << std::endl;
+            if (verbose){ 
+                std::cout << "[IA]  ";
+                champ->afficherCarte();
+                std::cout << std::endl;
+            }
             champ->activer(player, game);
         } else {
             break;
@@ -59,7 +65,7 @@ void HeuristicAI::playTour(Game& game, Player& player) {
 
     // Phase 3 - Purchases (skip if can finish opponent)
     if (canFinishOpponent) {
-        if (verbose) std::cout << "[IA] Phase 3 - Achats (SKIP: objectif victoire)" << std::endl;
+        if (verbose) std::cout << "[IA] Phase 3 - skip objectif victoire)" << std::endl;
     } else {
         if (verbose) std::cout << "[IA] Phase 3 - Achats" << std::endl;
         safetyCounter = 0;
@@ -67,12 +73,14 @@ void HeuristicAI::playTour(Game& game, Player& player) {
             int cardToBuy = decideCardBuy(game, player);
             if (cardToBuy == -2) break;
             if (cardToBuy == -1) {
-                if (verbose) std::cout << "[IA]  -> Gemme de Feu" << std::endl;
+                if (verbose) std::cout << "[IA] Gemme de Feu" << std::endl;
                 game.acheterGemmeDeFeu(player);
             } else {
                 const auto& marche = game.getMarche();
                 if (cardToBuy >= 0 && static_cast<size_t>(cardToBuy) < marche.size()) {
-                    if (verbose) std::cout << "[IA]  -> " << marche[cardToBuy]->getNom() << std::endl;
+                    if (verbose) std::cout << "[IA]  " << std::endl;
+                    marche[cardToBuy]->afficherCarte();
+                    std::cout << std::endl;
                 }
                 game.acheterCarte(cardToBuy, player);
             }
@@ -84,14 +92,14 @@ void HeuristicAI::playTour(Game& game, Player& player) {
     if (player.getAtk() > 0) {
         int target = decideAttackTarget(game, player, opponent);
         if (target == -1) {
-            if (verbose) std::cout << "[IA]  -> Attaque directe" << std::endl;
+            if (verbose) std::cout << "[IA]  Attaque directe" << std::endl;
             player.attaquer(opponent, nullptr);
         } else if (target >= 0) {
             auto& advChamps = opponent.getChampionsEnJeu();
             if (static_cast<size_t>(target) < advChamps.size()) {
                 Champion* targetChamp = dynamic_cast<Champion*>(advChamps[target].get());
                 if (targetChamp) {
-                    if (verbose) std::cout << "[IA]  -> Attaque " << targetChamp->getNom() << std::endl;
+                    if (verbose) std::cout << "[IA]  Attaque " << targetChamp->getNom() << std::endl;
                     player.attaquer(opponent, targetChamp);
                 }
             }
