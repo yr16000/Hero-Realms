@@ -8,6 +8,7 @@
 #include <cctype>
 #include "../include/ui/CardRenderer.hpp"
 #include "../include/CardLoader.hpp"
+#include "../include/ai/HeuristicAI.hpp"
 
 Game::Game(){
     // create two players
