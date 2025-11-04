@@ -51,9 +51,6 @@ int main() {
         std::cout << "\n Joueur 1 (Vous) vs IA MCTS (Joueur 2) \n";
     }
 
-    // Init tour du joueur 1
-    joueurs[joueurActif].resetPourNouveauTour();
-
     while (!quitter && !game.estTerminee()) {
         // 🔹 Nettoyage clair du terminal avant chaque tour
     #ifdef _WIN32
