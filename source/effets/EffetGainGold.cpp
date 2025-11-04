@@ -5,6 +5,7 @@ EffetGainGold::EffetGainGold(int montant) : Effet("Gain d'or"), montant(montant)
 
 void EffetGainGold::activerEffet(Player& proprietaire, Game& game) {
     proprietaire.modiffGold(montant);
+    std::cout << montant << " de gold gagnés\n";
 }
 
 std::string EffetGainGold::toString() const {

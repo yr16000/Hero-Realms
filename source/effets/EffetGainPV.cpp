@@ -5,6 +5,7 @@ EffetGainPV::EffetGainPV(int montant) : Effet("Gain de PV"), montant(montant) {}
 
 void EffetGainPV::activerEffet(Player& proprietaire, Game& game) {
     proprietaire.soigner(montant);
+    std::cout << montant << " de PV gagnés\n";
 }
 
 std::string EffetGainPV::toString() const {

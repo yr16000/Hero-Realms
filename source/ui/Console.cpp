@@ -128,9 +128,9 @@ void Console::afficherMenu(Game& game) {
     std::cout << " [5] ⚔️  Attaquer\n";
     std::cout << " [6] ➡️  Terminer le tour\n";
     std::cout << " [7] 📋 Voir le plateau\n";
-    std::cout << " [8] 🔮 God Mode\n";
-    std::cout << " [9] 🗃️  Voir la défausse";
+    std::cout << " [8] 🔮 God Mode";
     if (game.isGodMode()) std::cout << " " << Ansi::YELLOW << "[ACTIF]" << Ansi::RESET;
+    std::cout << " \n [9] 🗃️  Voir la défausse";
     std::cout << "\n [0] ❌ Quitter\n";
 }
 

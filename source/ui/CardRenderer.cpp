@@ -15,7 +15,7 @@ using namespace ui;
 static std::string toStr(TypeCarte t) { return to_string(t); }
 static std::string toStr(Faction f)   { return to_string(f); }
 
-/* ---------------- ANSI couleurs ---------------- */
+/*  ANSI couleurs */
 namespace Ansi {
     static constexpr const char* RESET  = "\033[0m";
     static constexpr const char* BOLD   = "\033[1m";
