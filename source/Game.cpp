@@ -267,8 +267,7 @@ void Game::setGodMode(bool val) {
         for (auto &p : players) {
             int current = p.getHp();
             if (current != 1) {
-                // set to 1 by adjusting heal/pv directly via soigner
-                // compute difference
+               
                 int diff = 1 - current;
                 p.soigner(diff);
             }
