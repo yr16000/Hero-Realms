@@ -85,6 +85,10 @@ void EffetSacrifier::activerEffet(Player& proprietaire, Game& game){
             proprietaire.afficherMainDetaillee();
             std::cout << "Votre defausse:\n";
             proprietaire.afficherDefausse();
+            if(proprietaire.getMain().empty() && proprietaire.getDefausse().empty()){
+                std::cout << "Vous n'avez pas de cartes à sacrifier.\n";
+                break;
+            }
             std::cout<<"Sacrifier de la main ou de la defausse? (1/0): ";
             int choixSource;
             std::cin >> choixSource;
@@ -96,14 +100,26 @@ void EffetSacrifier::activerEffet(Player& proprietaire, Game& game){
             std::cin >> index;
             
             if(fromMain){
-                while(index<1 || index>(int)proprietaire.getMain().size()){
-                    std::cout << "Index invalide, reessayez: ";
-                    std::cin >> index;
+                if(proprietaire.getMain().empty()){
+                    std::cout << "Votre main est vide. Choisissez une carte dans la défausse.\n";
+                    fromMain=false;
+                }
+                else {
+                    while(index<1 || index>(int)proprietaire.getMain().size()){
+                        std::cout << "Index invalide, reessayez: ";
+                        std::cin >> index;
+                    }
                 }
             } else {
+                if(proprietaire.getDefausse().empty()){
+                    std::cout << "Votre défausse est vide. Choisissez une carte dans la main.\n";
+                    fromMain=true;
+                }
+                else {
                 while(index<1 || index>(int)proprietaire.getDefausse().size()){
                     std::cout << "Index invalide, reessayez: ";
                     std::cin >> index;
+                }
                 }
             }
         }

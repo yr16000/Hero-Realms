@@ -5,6 +5,7 @@
 #include "Carte.hpp"
 #include <iostream>
 #include <unordered_map>
+#include "Objet.hpp"
 // forward declaration to avoid circular include
 class Game;
 class Champion;

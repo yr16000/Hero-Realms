@@ -138,6 +138,8 @@ int main() {
             case 9: // 🗃️  Voir la défausse
                 ui::Console::voirDefausse(p, game);
                 break;
+            case 10: // Sacrifier une carte (si elle possède un effet de sacrifice)
+                ui::Console::sacrifierUneCarte(p, game);
         }
     }
 

@@ -236,28 +236,24 @@ void Player::jouerCarte(int index, Game& game){
 
 void Player::jouerCarteIA(int index, Game& game, bool activerChampion){
 	if(index < 1 || static_cast<size_t>(index) > main.size()){
+		// invalid index for AI, ignore
 		return;
 	}
-	// take card from hand
+	// take card from hand (AI version: non-interactive)
 	std::unique_ptr<Carte> c = std::move(main[index-1]);
-	// remove gap
 	main.erase(main.begin()+index-1);
 
 	if(!c){
 		return;
 	}
 
-	// Play based on primary type
 	switch(c->getType()){
 		case TypeCarte::Champion:
-			{
-				// Place champion into play
-				championsEnJeu.push_back(std::move(c));
-				// L'IA active toujours les champions immédiatement si demandé
-				if(activerChampion){
-					Champion* champ = dynamic_cast<Champion*>(championsEnJeu.back().get());
-					if(champ) champ->activer(*this, game);
-				}
+			// place champion into play; optionally activate immediately
+			championsEnJeu.push_back(std::move(c));
+			if(activerChampion){
+				Champion* champ = dynamic_cast<Champion*>(championsEnJeu.back().get());
+				if(champ) champ->activer(*this, game);
 			}
 			break;
 		case TypeCarte::Action:
@@ -266,11 +262,9 @@ void Player::jouerCarteIA(int index, Game& game, bool activerChampion){
 			defausse.push_back(std::move(c));
 			break;
 		case TypeCarte::Objet:
-			// For objects: activate immediately
-			{
-				c->activer(*this, game);
-				defausse.push_back(std::move(c));
-			}
+			// activate then send to defausse
+			c->activer(*this, game);
+			defausse.push_back(std::move(c));
 			break;
 		default:
 			defausse.push_back(std::move(c));
@@ -293,14 +287,35 @@ void Player::sacrifierCarte(Carte* carte, Game& game){
 	// find in main
 	for(size_t i=0;i<main.size();++i){
 		if(main[i].get() == carte){
+			if(main[i].get() == carte){
+				if(carte->getType()==TypeCarte::Objet){
+					Objet* obj = dynamic_cast<Objet*>(carte);
+					if(obj->getNom()=="Fire Gem"){
+						game.getFireGems().push_back(std::move(main[i]));
+						main.erase(main.begin()+i);
+						return;
+					}
+				}
+			}
 			sacrifices.push_back(std::move(main[i]));
 			main.erase(main.begin()+i);
 			return;
+			
 		}
 	}
 	// find in defausse
 	for(size_t i=0;i<defausse.size();++i){
 		if(defausse[i].get() == carte){
+			if(defausse[i].get() == carte){
+				if(carte->getType()==TypeCarte::Objet){
+					Objet* obj = dynamic_cast<Objet*>(carte);
+					if(obj->getNom()=="Fire Gem"){
+						game.getFireGems().push_back(std::move(defausse[i]));
+						defausse.erase(defausse.begin()+i);
+						return;
+					}
+				}
+			}
 			sacrifices.push_back(std::move(defausse[i]));
 			defausse.erase(defausse.begin()+i);
 			return;

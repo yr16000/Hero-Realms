@@ -3,6 +3,8 @@
 #include <sstream>
 #include <limits>
 #include <cctype>
+#include "../../include/Action.hpp"
+#include "../../include/Objet.hpp"
 
 using namespace ui;
 
@@ -131,6 +133,7 @@ void Console::afficherMenu(Game& game) {
     std::cout << " [8] 🔮 God Mode";
     if (game.isGodMode()) std::cout << " " << Ansi::YELLOW << "[ACTIF]" << Ansi::RESET;
     std::cout << " \n [9] 🗃️  Voir la défausse";
+    std::cout << " \n[10] 📦 Sacrifier une carte (si effet de sacrifice)\n";
     std::cout << "\n [0] ❌ Quitter\n";
 }
 
@@ -247,6 +250,66 @@ void Console::activerUnChampion(Player& p, Game& game) {
 void Console::voirSacrifices(Player& p, Game& /*game*/) {
     // Affichage interne existant (peut s’appuyer sur CardRenderer si tu l’y utilises)
     p.afficherSacrifices();
+    attendreEntree();
+}
+
+void Console::sacrifierUneCarte(Player& p, Game& game) {
+    auto& hand = p.getMain();
+    if (hand.empty()) {
+        std::cout << Ansi::RED << "Aucune carte en main." << Ansi::RESET << "\n";
+        attendreEntree();
+        return;
+    }
+
+    // Collecter indices des cartes qui ont des effets de sacrifice
+    std::vector<int> candidates;
+    for (size_t i = 0; i < hand.size(); ++i) {
+        const Carte* c = hand[i].get();
+        // Actions et Objets peuvent avoir effets de sacrifice
+        if (c->getType() == TypeCarte::Action) {
+            const Action* a = dynamic_cast<const Action*>(c);
+            if (a && !a->getEffetsSacrifice().empty()) candidates.push_back(static_cast<int>(i));
+        } else if (c->getType() == TypeCarte::Objet) {
+            const Objet* o = dynamic_cast<const Objet*>(c);
+            if (o && !o->getEffetsSacrifice().empty()) candidates.push_back(static_cast<int>(i));
+        }
+    }
+
+    if (candidates.empty()) {
+        std::cout << Ansi::YELLOW << "Aucune carte avec effet de sacrifice dans la main." << Ansi::RESET << "\n";
+        attendreEntree();
+        return;
+    }
+
+    // Afficher uniquement les cartes candidates
+    ui::CardRenderer::Options opts; opts.width = 60; opts.showIndices = true;
+    std::vector<const Carte*> toRender;
+    toRender.reserve(candidates.size());
+    for (int idx : candidates) toRender.push_back(hand[(size_t)idx].get());
+
+    std::cout << Ansi::BOLD << "Cartes que vous pouvez sacrifier:\n" << Ansi::RESET;
+    try {
+        std::cout << ui::CardRenderer::renderMultiple(toRender, opts) << "\n";
+    } catch(...) {
+        for (size_t i = 0; i < toRender.size(); ++i) {
+            std::cout << "[" << (i+1) << "] " << colorFor(toRender[i]->getFaction()) << toRender[i]->getNom() << Ansi::RESET << "\n";
+        }
+    }
+
+    int choice = lireChoix("Choisir la carte à sacrifier (index listé)", 1, (int)toRender.size());
+    if (choice == 0) return;
+
+    int realIndex = candidates[(size_t)choice - 1];
+    Carte* cible = hand[(size_t)realIndex].get();
+
+    // Confirmation
+    std::cout << "Sacrifier '" << cible->getNom() << "' ? (1=Oui, 0=Non) : ";
+    int conf = lireChoix("Confirmer", 0, 1);
+    if (conf == 0) return;
+
+    // Perform sacrifice
+    p.sacrifierCarte(cible, game);
+    std::cout << Ansi::GREEN << "Carte sacrifiée." << Ansi::RESET << "\n";
     attendreEntree();
 }
 

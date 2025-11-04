@@ -338,3 +338,5 @@ int Game::getAIPlayerIndex() const {
 bool Game::isAIPlayer(int playerIndex) const {
     return aiPlayerIndex == playerIndex && aiPlayer != nullptr;
 }
+
+std::vector<std::unique_ptr<Carte>>& Game::getFireGems() { return gemmesDeFeu; }

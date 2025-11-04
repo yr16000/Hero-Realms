@@ -9,6 +9,7 @@
 #include "../Enums.h"
 #include "CardRenderer.hpp"
 #include <string>
+#include "../Action.hpp"
 
 namespace ui {
 
@@ -56,6 +57,7 @@ public:
     // Actions
     static void jouerUneCarte(Player& p, Game& game);
     static void activerUnChampion(Player& p, Game& game);
+    static void sacrifierUneCarte(Player& p, Game& game);
     static void voirSacrifices(Player& p, Game& game);
     static void acheterAuMarche(Player& p, Game& game);
     static void attaquer(Player& p, Player& adv, Game& game);

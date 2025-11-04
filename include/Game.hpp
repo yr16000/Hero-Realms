@@ -56,8 +56,8 @@ class Game{
     HeuristicAI* getAIPlayer() const;
     int getAIPlayerIndex() const;
     bool isAIPlayer(int playerIndex) const;
+    std::vector<std::unique_ptr<Carte>>& getFireGems();
  
-
 };
 
 
