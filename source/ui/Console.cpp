@@ -53,12 +53,12 @@ void Console::afficherHeader(Game& /*game*/, Player& moi, Player& adv) {
 
     // Joueur actif 
     std::cout << "Vous (Joueur" << (moi.getId()+1) << ")  | "
-              << "❤️  " << moi.getHp() << "   "
-              << "💰 " << moi.getGold() << "   "
-              << "⚔️  " << moi.getAtk()  << "\n";
+              << "PV: " << moi.getHp() << "❤️   "
+              << "OR : " << moi.getGold() << "💰  "
+              << "COMBAT: " << moi.getAtk()  << "⚔️\n";
 
     // Adversaire (PV uniquement)
-    std::cout << "Adversaire (Joueur" << (adv.getId()+1) << ") | ❤️  " << adv.getHp() << "\n";
+    std::cout << "Adversaire (Joueur" << (adv.getId()+1) << ") | PV: " << adv.getHp() << "❤️\n";
 }
 
 void Console::afficherPlateau(Game& game, Player& moi, Player& adv, bool pauseApres) {
