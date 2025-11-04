@@ -49,59 +49,64 @@ const char* Console::colorFor(Faction f) {
 
 void Console::afficherHeader(Game& /*game*/, Player& moi, Player& adv) {
     using namespace Ansi;
-    std::cout << CYAN << BOLD << "⚔️  HERO REALMS\n" << RESET;
+    std::cout << GREEN << BOLD << "⚔️  HERO REALMS\n" << RESET;
 
-    // Joueur actif (avec emojis)
-    std::cout << "Vous (J" << (moi.getId()+1) << ")  | "
+    // Joueur actif 
+    std::cout << "Vous (Joueur" << (moi.getId()+1) << ")  | "
               << "❤️  " << moi.getHp() << "   "
               << "💰 " << moi.getGold() << "   "
               << "⚔️  " << moi.getAtk()  << "\n";
 
     // Adversaire (PV uniquement)
-    std::cout << "Adversaire (J" << (adv.getId()+1) << ") | ❤️  " << adv.getHp() << "\n";
+    std::cout << "Adversaire (Joueur" << (adv.getId()+1) << ") | ❤️  " << adv.getHp() << "\n";
 }
 
 void Console::afficherPlateau(Game& game, Player& moi, Player& adv, bool pauseApres) {
     using namespace Ansi;
     std::cout << GRAY << "────────────────────────────────────────────────────────\n" << RESET;
 
-    // Champions du joueur
+    ui::CardRenderer::Options ro;
+    ro.width = 60;
+    ro.perRow = 2;          // 2 cartes côte à côte
+    ro.showIndices = false; // pas d’indices sur le plateau
+
+    // ----- Champions du joueur -----
     auto& mesChamps = moi.getChampionsEnJeu();
     std::cout << "🛡️  Vos champions :\n";
     if (mesChamps.empty()) {
         std::cout << "  (Aucun)\n";
     } else {
-        for (size_t i = 0; i < mesChamps.size(); ++i) {
-            auto* ch = dynamic_cast<Champion*>(mesChamps[i].get());
-            std::cout << "  " << (i+1) << ") "
-                      << colorFor(mesChamps[i]->getFaction())
-                      << mesChamps[i]->getNom() << Ansi::RESET;
-            if (ch) {
-                std::cout << " (PV=" << ch->getPv() << ")";
-                if (ch->getEstGarde()) std::cout << " [Garde]";
-                if (ch->getEstActiver()) std::cout << " (activé)";
+        std::vector<const Carte*> mine;
+        mine.reserve(mesChamps.size());
+        for (const auto& c : mesChamps) mine.push_back(c.get());
+
+        try {
+            std::cout << ui::CardRenderer::renderMultiple(mine, ro) << "\n";
+        } catch (...) {
+            // Fallback minimal
+            for (size_t i = 0; i < mine.size(); ++i) {
+                std::cout << "  - " << mine[i]->getNom() << "\n";
             }
-            std::cout << "\n";
         }
     }
 
-    // Champions adverses
+    // ----- Champions adverses -----
     auto& advChamps = adv.getChampionsEnJeu();
     std::cout << "🛡️  Champions adverses :\n";
     if (advChamps.empty()) {
         std::cout << "  (Aucun)\n";
     } else {
-        for (size_t i = 0; i < advChamps.size(); ++i) {
-            auto* ch = dynamic_cast<Champion*>(advChamps[i].get());
-            std::cout << "  " << (i+1) << ") "
-                      << colorFor(advChamps[i]->getFaction())
-                      << advChamps[i]->getNom() << Ansi::RESET;
-            if (ch) {
-                std::cout << " (PV=" << ch->getPv() << ")";
-                if (ch->getEstGarde()) std::cout << " [Garde]";
-                if (ch->getEstActiver()) std::cout << " (activé)";
+        std::vector<const Carte*> theirs;
+        theirs.reserve(advChamps.size());
+        for (const auto& c : advChamps) theirs.push_back(c.get());
+
+        try {
+            std::cout << ui::CardRenderer::renderMultiple(theirs, ro) << "\n";
+        } catch (...) {
+            // Fallback minimal
+            for (size_t i = 0; i < theirs.size(); ++i) {
+                std::cout << "  - " << theirs[i]->getNom() << "\n";
             }
-            std::cout << "\n";
         }
     }
 
@@ -112,9 +117,10 @@ void Console::afficherPlateau(Game& game, Player& moi, Player& adv, bool pauseAp
     if (pauseApres) attendreEntree();
 }
 
+
 void Console::afficherMenu(Game& game) {
     using namespace Ansi;
-    std::cout << "\n" << CYAN << BOLD << "Que voulez-vous faire ?\n" << RESET;
+    std::cout << "\n" << GREEN << BOLD << "Que voulez-vous faire ?\n" << RESET;
     std::cout << " [1] 🃏 Jouer une carte\n";
     std::cout << " [2] ⚡ Activer un champion\n";
     std::cout << " [3] 📦 Voir les sacrifices\n";
@@ -122,7 +128,8 @@ void Console::afficherMenu(Game& game) {
     std::cout << " [5] ⚔️  Attaquer\n";
     std::cout << " [6] ➡️  Terminer le tour\n";
     std::cout << " [7] 📋 Voir le plateau\n";
-    std::cout << " [8] 🔮 Toggle God Mode";
+    std::cout << " [8] 🔮 God Mode\n";
+    std::cout << " [9] 🗃️  Voir la défausse";
     if (game.isGodMode()) std::cout << " " << Ansi::YELLOW << "[ACTIF]" << Ansi::RESET;
     std::cout << "\n [0] ❌ Quitter\n";
 }
@@ -134,22 +141,43 @@ void Console::jouerUneCarte(Player& p, Game& game) {
         attendreEntree();
         return;
     }
-    std::cout << Ansi::BOLD << "Votre main :\n" << Ansi::RESET;
-    for (size_t i = 0; i < hand.size(); ++i) {
-        std::cout << "  [" << (i+1) << "] "
-                  << colorFor(hand[i]->getFaction()) << hand[i]->getNom() << Ansi::RESET
-                  << " (coût " << hand[i]->getCout() << ")\n";
+
+    // Affichage visuel de la main en grille 2 par ligne
+    {
+        ui::CardRenderer::Options opts;
+        opts.width = 60;          // même largeur que le marché
+        opts.perRow = 2;          // 2 cartes par ligne
+        opts.showIndices = true;  // affiche [1] [2] ...
+
+        std::vector<const Carte*> cartes;
+        cartes.reserve(hand.size());
+        for (const auto& c : hand) cartes.push_back(c.get());
+
+        std::cout << Ansi::BOLD << "Votre main (" << hand.size() << " cartes)\n" << Ansi::RESET;
+        try {
+            std::cout << ui::CardRenderer::renderMultiple(cartes, opts) << "\n";
+        } catch (...) {
+            // fallback minimal si jamais le renderer plante
+            for (size_t i = 0; i < hand.size(); ++i) {
+                std::cout << "[" << (i+1) << "] "
+                          << colorFor(hand[i]->getFaction()) << hand[i]->getNom() << Ansi::RESET
+                          << " (coût " << hand[i]->getCout() << ")\n";
+            }
+        }
     }
+
+    // --- Choix utilisateur (inchangé) ---
     int c = lireChoix("Carte à jouer", 1, (int)hand.size());
     if (c == 0) return;
 
-    // Aperçu visuel via CardRenderer
+    // Aperçu de la carte choisie
     ui::CardRenderer::Options opts; opts.width = 60;
     std::cout << "\n" << ui::CardRenderer::render(*hand[c-1], opts) << "\n";
 
-    p.jouerCarte(c, game); // ton flux prend un index 1-based dans ton main précédent
+    p.jouerCarte(c, game); // ton flux prend un index 1-based
     attendreEntree();
 }
+
 
 void Console::activerUnChampion(Player& p, Game& game) {
     auto& champs = p.getChampionsEnJeu();
@@ -158,30 +186,63 @@ void Console::activerUnChampion(Player& p, Game& game) {
         attendreEntree();
         return;
     }
-    std::cout << Ansi::BOLD << "Vos champions :\n" << Ansi::RESET;
+
+    std::cout << Ansi::BOLD << "Vos champions en jeu :\n" << Ansi::RESET;
+
+    ui::CardRenderer::Options opts;
+    opts.width = 60;          // même gabarit que le marché
+    opts.showIndices = false; // on gère nous-mêmes l'entête [i]
+
+    // Affiche chaque champion individuellement
     for (size_t i = 0; i < champs.size(); ++i) {
-        auto* ch = dynamic_cast<Champion*>(champs[i].get());
-        std::cout << "  [" << (i+1) << "] "
-                  << colorFor(champs[i]->getFaction()) << champs[i]->getNom() << Ansi::RESET;
-        if (ch) {
-            std::cout << " (PV=" << ch->getPv() << ")";
-            if (ch->getEstGarde()) std::cout << " [Garde]";
-            if (ch->getEstActiver()) std::cout << " (activé)";
+        auto* c = champs[i].get();
+        auto* ch = dynamic_cast<Champion*>(c);
+
+        // Entête [i] + tag (activé) en rouge si actif
+        std::cout << "[" << (i + 1) << "] ";
+        if (ch && ch->getEstActiver()) {
+            std::cout << Ansi::RED << "(activé)" << Ansi::RESET << " ";
         }
         std::cout << "\n";
-    }
-    int c = lireChoix("Champion à activer", 1, (int)champs.size());
-    if (c == 0) return;
 
-    auto* cible = dynamic_cast<Champion*>(champs[c-1].get());
+        // Rendu complet de la carte (une par une)
+        try {
+            std::cout << ui::CardRenderer::render(*c, opts) << "\n";
+        } catch (...) {
+            // fallback minimal en cas de souci
+            std::cout << c->getNom() << " (coût=" << c->getCout() << ")\n";
+        }
+
+        // Petite séparation visuelle entre les cartes
+        std::cout << "\n";
+    }
+
+    // Choix du champion à activer
+    int cidx = lireChoix("Champion à activer", 1, (int)champs.size());
+    if (cidx == 0) return;
+
+    auto* cible = dynamic_cast<Champion*>(champs[(size_t)cidx - 1].get());
     if (!cible) {
         std::cout << Ansi::RED << "La carte choisie n'est pas un champion.\n" << Ansi::RESET;
         attendreEntree();
         return;
     }
+
+    // Aperçu avant activation
+    std::cout << "Avant activation :\n"
+              << ui::CardRenderer::render(*cible, opts) << "\n";
+
+    // Activation
     cible->activer(p, game);
+
+    // Réaffichage du tag (activé) en dehors, en rouge
+    std::cout << "Après activation : "
+              << Ansi::RED << "(activé)" << Ansi::RESET << "\n"
+              << ui::CardRenderer::render(*cible, opts) << "\n";
+
     attendreEntree();
 }
+
 
 void Console::voirSacrifices(Player& p, Game& /*game*/) {
     // Affichage interne existant (peut s’appuyer sur CardRenderer si tu l’y utilises)
@@ -239,3 +300,11 @@ void Console::attaquer(Player& p, Player& adv, Game& /*game*/) {
     p.attaquer(adv, cible);
     attendreEntree();
 }
+
+
+void Console::voirDefausse(Player& p, Game& /*game*/) {
+    std::cout << "\n";
+    p.afficherDefausse();  // ⬅️ réutilise la méthode de Player
+    attendreEntree();
+}
+

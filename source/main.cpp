@@ -67,7 +67,7 @@ int main() {
         ui::Console::afficherHeader(game, p, adv);
         ui::Console::afficherMenu(game);
 
-        int choix = ui::Console::lireChoix("> Choix", 0, 8);  // 0=Quitter visible
+        int choix = ui::Console::lireChoix("> Choix", 0, 9);  // 0=Quitter visible
         switch (choix) {
             case 0: // Quitter
                 quitter = true; 
@@ -105,6 +105,10 @@ int main() {
 
             case 8: // 🔮 God Mode
                 game.toggleGodMode();
+                break;
+
+            case 9: // 🗃️  Voir la défausse
+                ui::Console::voirDefausse(p, game);
                 break;
         }
     }
