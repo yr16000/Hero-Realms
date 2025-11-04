@@ -323,28 +323,64 @@ void Player::afficherChampionsEnJeu() const{
 	}
 }
 
-void Player::afficherDefausse() const{
-	auto const& defausse = this->defausse;
-	ui::CardRenderer::Options opts;
-	opts.width = 60;
+void Player::afficherDefausse() const {
+    // 1) Construire la liste de cartes visibles (pointeurs bruts)
+    std::vector<const Carte*> visibles;
+    visibles.reserve(defausse.size());
+    for (const auto& up : defausse) visibles.push_back(up.get());
 
-	if (!defausse.empty()) {
-		std::cout << "Votre défausse actuelle :\n";
-		for (size_t i = 0; i < defausse.size(); ++i) {
-			std::cout << "\n(" << i + 1 << ")\n";
-			std::cout << ui::CardRenderer::render(*defausse[i], opts);
-		}
-	} else {
-		std::cout << "Votre défausse est vide.\n";
-	}
+    // 2) En-tête
+    std::cout << "🗃️  Défausse du joueur " << id
+              << " (" << defausse.size() << " cartes)\n";
+
+    if (visibles.empty()) {
+        std::cout << "Votre défausse est vide.\n";
+        return;
+    }
+
+    // 3) Options d’affichage (2 par ligne, largeur 60) — comme le marché
+    ui::CardRenderer::Options opts;
+    opts.width = 60;
+    opts.perRow = 2;          // 2 cartes par ligne
+    opts.showIndices = true;  // affiche [1], [2], ...
+
+    // 4) Rendu unique
+    try {
+        std::cout << ui::CardRenderer::renderMultiple(visibles, opts) << "\n";
+    } catch (...) {
+        // Fallback minimal si le renderer plante
+        for (size_t i = 0; i < visibles.size(); ++i) {
+            const Carte* c = visibles[i];
+            if (!c) continue;
+            std::cout << "[" << (i + 1) << "] "
+                      << c->getNom() << " (coût=" << c->getCout() << ")\n";
+        }
+    }
 }
 
-void Player::afficherSacrifices() const{
-	std::cout << "Sacrifices du joueur " << id << " (" << sacrifices.size() << " cartes)\n";
-	for(size_t i=0;i<sacrifices.size();++i){
-		std::cout << i+1 << ". " << sacrifices[i]->getNom() << "\n";
-	}
+void Player::afficherSacrifices() const {
+    ui::CardRenderer::Options opts;
+    opts.width = 60;
+
+    std::cout << "Sacrifices du joueur " << id+1
+              << " (" << sacrifices.size() << " cartes)\n";
+
+    if (sacrifices.empty()) {
+        std::cout << "Aucune carte sacrifiée.\n";
+        return;
+    }
+
+    for (size_t i = 0; i < sacrifices.size(); ++i) {
+        std::cout << "\n(" << (i + 1) << ")\n";
+        try {
+            std::cout << ui::CardRenderer::render(*sacrifices[i], opts) << "\n";
+        } catch (...) {
+            std::cout << sacrifices[i]->getNom()
+                      << " (coût = " << sacrifices[i]->getCout() << ")\n";
+        }
+    }
 }
+
 
 void Player::afficherStats() const{
 	std::cout << "Joueur " << id << " - PV: " << pv << " Or: " << gold << " Combat: " << combat << "\n";

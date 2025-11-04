@@ -8,7 +8,6 @@
 #include <cctype>
 #include "../include/ui/CardRenderer.hpp"
 #include "../include/CardLoader.hpp"
-#include "../include/ai/HeuristicAI.hpp"
 
 Game::Game(){
     // create two players
@@ -33,31 +32,42 @@ void Game::tourDeJeu(Player& joueur){
     std::cout << "Tour du joueur " << joueur.getId() << "\n";
 }
 
-void Game::afficherMarche() const{
-    std::cout << "Marche: (" << marche.size() << " cartes)\n";
+void Game::afficherMarche() const {
+    // 1) Concaténer Marché puis (si GodMode) la Pioche dans un unique vecteur
+    std::vector<const Carte*> visibles;
+    visibles.reserve(marche.size() + (godMode ? pioche.size() : 0));
+    for (const auto& up : marche)  visibles.push_back(up.get());
+    if (godMode) {
+        for (const auto& up : pioche) visibles.push_back(up.get());
+    }
+
+    // 2) En-tête
+    const size_t total = visibles.size();
+    std::cout << " 🏪 Marché : " << total << " carte" << (total > 1 ? "s" : "");
+    if (godMode) std::cout << "  |  GodMode: pioche visible";
+    std::cout << "\n\n";
+   
+
+    // 3) Options d'affichage (2 par ligne, largeur 60)
     ui::CardRenderer::Options opts;
     opts.width = 60;
-    for(size_t i=0;i<marche.size();++i){
-        std::cout << "--- Carte " << i+1 << " ---\n";
-        try{
-            std::cout << ui::CardRenderer::render(*marche[i], opts) << "\n";
-        } catch(...){
-            // fallback simple name if rendering fails
-            std::cout << marche[i]->getNom() << " (cout=" << marche[i]->getCout() << ")\n";
-        }
-    }
-    if (godMode) {
-        std::cout << "-- Pioche (accessible en GodMode): " << pioche.size() << " cartes --\n";
-        for (size_t i = 0; i < pioche.size(); ++i) {
-            std::cout << "--- Pioche " << (marche.size() + i + 1) << " ---\n";
-            try {
-                std::cout << ui::CardRenderer::render(*pioche[i], opts) << "\n";
-            } catch(...) {
-                std::cout << pioche[i]->getNom() << " (cout=" << pioche[i]->getCout() << ")\n";
-            }
+    opts.perRow = 2;         // 2 cartes par ligne
+    opts.showIndices = true; // affiche [1], [2], ...
+
+    // 4) Rendu unique (indices continus sur marché + pioche)
+    try {
+        std::cout << ui::CardRenderer::renderMultiple(visibles, opts) << "\n";
+    } catch (...) {
+        // Fallback : noms/ coûts au cas où
+        for (size_t i = 0; i < visibles.size(); ++i) {
+            const Carte* c = visibles[i];
+            if (!c) continue;
+            std::cout << "[" << (i + 1) << "] "
+                      << c->getNom() << " (cout=" << c->getCout() << ")\n";
         }
     }
 }
+
 
 Carte* Game::acheterCarte(int index, Player& acheteur){
     int marcheSize = (int)marche.size();
@@ -301,26 +311,4 @@ const Carte* Game::getModeleGemmeDeFeu() const {
 
 void Game::initialiserGemmesDeFeu() {
     gemmesDeFeu = CardLoader::loadFireGems();
-}
- 
- 
-// AI Methods
-void Game::setAIPlayer(std::unique_ptr<HeuristicAI> ai, int playerIndex) {
-    if (playerIndex >= 0 && playerIndex < static_cast<int>(players.size())) {
-        aiPlayer = std::move(ai);
-        aiPlayerIndex = playerIndex;
-        std::cout << \"IA activ�e pour le joueur \" << (playerIndex + 1) << \"\n\";
-    }
-}
-
-HeuristicAI* Game::getAIPlayer() const {
-    return aiPlayer.get();
-}
-
-int Game::getAIPlayerIndex() const {
-    return aiPlayerIndex;
-}
-
-bool Game::isAIPlayer(int playerIndex) const {
-    return aiPlayerIndex == playerIndex && aiPlayer != nullptr;
 }

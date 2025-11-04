@@ -80,7 +80,7 @@ inline std::string to_string(Faction f){
 
 inline std::string to_string(TypeCarte t){
     switch(t){
-        case TypeCarte::Champion: return "  Champion";
+        case TypeCarte::Champion: return "Champion";
         case TypeCarte::Action: return "Action";
         case TypeCarte::Objet: return "Objet";
     }

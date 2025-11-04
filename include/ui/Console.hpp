@@ -22,6 +22,9 @@ namespace Ansi {
     static constexpr const char* GREEN  = "\033[32m";
     static constexpr const char* CYAN   = "\033[36m";
     static constexpr const char* GRAY   = "\033[90m";
+    static constexpr const char* BROWN       = "\033[38;5;94m";  
+    static constexpr const char* DARK_BROWN  = "\033[38;5;130m"; 
+    static constexpr const char* ORANGE      = "\033[38;5;208m";
 }
 
 /**
@@ -56,6 +59,8 @@ public:
     static void voirSacrifices(Player& p, Game& game);
     static void acheterAuMarche(Player& p, Game& game);
     static void attaquer(Player& p, Player& adv, Game& game);
+    static void voirDefausse(Player& p, Game& game);
+
 
     // Utilitaires
     static void attendreEntree(const std::string& msg="(Entrée pour continuer)");
