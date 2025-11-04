@@ -85,9 +85,9 @@ int main() {
             std::cout << "Appuyez sur Entree pour continuer...\n";
             std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
             
-            // Terminer le tour de l'IA
+            // Terminer le tour de l'IA (reset uniquement pour le joueur qui vient de finir)
+            p.resetPourNouveauTour();  // Reset à la FIN du tour actuel
             joueurActif = 1 - joueurActif;
-            joueurs[joueurActif].resetPourNouveauTour();  // Reset au DEBUT du prochain tour
             continue;
         }
 
@@ -124,7 +124,6 @@ int main() {
             case 6: { // ➡️ Terminer le tour → bascule immédiate + redraw pour le suivant
                 p.resetPourNouveauTour();  // Reset à la FIN du tour actuel
                 joueurActif = 1 - joueurActif;
-                joueurs[joueurActif].resetPourNouveauTour();  // Reset au DEBUT du prochain tour
                 continue; // repart du début → clear + header du nouveau joueur
             }
 
