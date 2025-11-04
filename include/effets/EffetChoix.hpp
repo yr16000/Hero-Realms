@@ -4,6 +4,7 @@
 #include "../Effet.hpp"
 #include <vector>
 #include <memory>
+#include "../ai/HeuristicAI.hpp"
 
 class EffetChoix : public Effet{
 private:

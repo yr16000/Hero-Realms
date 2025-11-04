@@ -12,117 +12,93 @@ HeuristicAI::HeuristicAI(int playerId, bool verbose)
 }
 
 void HeuristicAI::playTour(Game& game, Player& player) {
-    logDecision("IA commence son tour");
-    
     Player& opponent = game.getPlayers()[1 - playerId];
-    
-    // STRATÉGIE: Vérifier si on peut finir l'adversaire ce tour
+
     int maxCombat = calculateMaxPotentialCombat(game, player);
     bool canFinishOpponent = (maxCombat >= opponent.getHp());
-    
-    if (canFinishOpponent && verbose) {
-        std::cout << "[IA] Victoire possible ! (Combat max: " << maxCombat << " vs HP: " << opponent.getHp() << ")" << std::endl;
-    }
-    
-    // Phase 1: Jouer les cartes dans l'ordre optimal
-    logDecision("Phase 1: Jouer les cartes");
+
+    // Phase 1 - Play cards
+    if (verbose) std::cout << "[IA] Phase 1 - Jouer cartes" << std::endl;
     bool continuePlayingCards = true;
     int safetyCounter = 0;
     const int MAX_ITERATIONS = 20;
-    
+
     while (continuePlayingCards && safetyCounter++ < MAX_ITERATIONS) {
         int cardToPlay = decideCardPlay(game, player);
-        
         if (cardToPlay == -1) {
             continuePlayingCards = false;
-            logDecision("Plus de cartes à jouer");
-        } else {
-            auto& main = player.getMain();
-            if (cardToPlay >= 1 && static_cast<size_t>(cardToPlay) <= main.size()) {
-                std::string cardName = main[cardToPlay - 1]->getNom();
-                
-                logDecision("Joue carte: " + cardName);
-                
-                // Pour les Champions : les mettre en jeu SANS les activer (Phase 1)
-                // Ils seront activés en Phase 2
-                player.jouerCarteIA(cardToPlay, game, false);
-            } else {
-                continuePlayingCards = false;
-            }
+            break;
         }
+        auto& main = player.getMain();
+        if (!(cardToPlay >= 1 && static_cast<size_t>(cardToPlay) <= main.size())) {
+            continuePlayingCards = false;
+            break;
+        }
+        std::string cardName = main[cardToPlay - 1]->getNom();
+        if (verbose) std::cout << "[IA]  -> " << cardName << std::endl;
+        // Put champions into play but do not activate now
+        player.jouerCarteIA(cardToPlay, game, false);
     }
-    
-    // Phase 2: Activer les champions en jeu
-    logDecision("Phase 2: Activer champions");
+
+    // Phase 2 - Activate champions
+    if (verbose) std::cout << "[IA] Phase 2 - Activer champions" << std::endl;
     safetyCounter = 0;
-    bool continueActivating = true;
-    
-    while (continueActivating && safetyCounter++ < MAX_ITERATIONS) {
+    while (safetyCounter++ < MAX_ITERATIONS) {
         int champToActivate = decideChampionToActivate(game, player);
-        
-        if (champToActivate == -1) {
-            continueActivating = false;
-            logDecision("Plus de champions à activer");
+        if (champToActivate == -1) break;
+        auto& champs = player.getChampionsEnJeu();
+        if (!(champToActivate >= 0 && static_cast<size_t>(champToActivate) < champs.size())) break;
+        Champion* champ = dynamic_cast<Champion*>(champs[champToActivate].get());
+        if (champ && !champ->getEstActiver()) {
+            if (verbose) std::cout << "[IA]  -> " << champ->getNom() << std::endl;
+            champ->activer(player, game);
         } else {
-            auto& champs = player.getChampionsEnJeu();
-            if (champToActivate >= 0 && static_cast<size_t>(champToActivate) < champs.size()) {
-                Champion* champ = dynamic_cast<Champion*>(champs[champToActivate].get());
-                if (champ && !champ->getEstActiver()) {
-                    logDecision("Active champion: " + champ->getNom());
-                    champ->activer(player, game);
-                }
-            }
-            continueActivating = false;
+            break;
         }
     }
-    
-    // Phase 3: Achats (seulement si on ne peut pas finir l'adversaire)
+
+    // Phase 3 - Purchases (skip if can finish opponent)
     if (canFinishOpponent) {
-        logDecision("Phase 3: SKIP ACHATS - Focus sur la victoire !");
+        if (verbose) std::cout << "[IA] Phase 3 - Achats (SKIP: objectif victoire)" << std::endl;
     } else {
-        logDecision("Phase 3: Achats (Or disponible: " + std::to_string(player.getGold()) + ")");
+        if (verbose) std::cout << "[IA] Phase 3 - Achats" << std::endl;
         safetyCounter = 0;
-        bool continueBuying = true;
-        
-        while (continueBuying && safetyCounter++ < MAX_ITERATIONS) {
+        while (safetyCounter++ < MAX_ITERATIONS) {
             int cardToBuy = decideCardBuy(game, player);
-            
-            if (cardToBuy == -2) {
-                continueBuying = false;
-                logDecision("Fin des achats");
-            } else if (cardToBuy == -1) {
-                logDecision("Achète Gemme de Feu");
+            if (cardToBuy == -2) break;
+            if (cardToBuy == -1) {
+                if (verbose) std::cout << "[IA]  -> Gemme de Feu" << std::endl;
                 game.acheterGemmeDeFeu(player);
             } else {
-                logDecision("Achète carte index: " + std::to_string(cardToBuy));
+                const auto& marche = game.getMarche();
+                if (cardToBuy >= 0 && static_cast<size_t>(cardToBuy) < marche.size()) {
+                    if (verbose) std::cout << "[IA]  -> " << marche[cardToBuy]->getNom() << std::endl;
+                }
                 game.acheterCarte(cardToBuy, player);
             }
         }
     }
-    
-    // Phase 4: Attaquer
-    if (verbose && player.getAtk() > 0) {
-        std::cout << "\n[Phase 4 - Attaque] (Combat: " << player.getAtk() << ")" << std::endl;
-    }
+
+    // Phase 4 - Attack
+    if (verbose) std::cout << "[IA] Phase 4 - Attaque" << std::endl;
     if (player.getAtk() > 0) {
         int target = decideAttackTarget(game, player, opponent);
-        
         if (target == -1) {
-            if (verbose) std::cout << "Attaque directe" << std::endl;
+            if (verbose) std::cout << "[IA]  -> Attaque directe" << std::endl;
             player.attaquer(opponent, nullptr);
         } else if (target >= 0) {
             auto& advChamps = opponent.getChampionsEnJeu();
             if (static_cast<size_t>(target) < advChamps.size()) {
                 Champion* targetChamp = dynamic_cast<Champion*>(advChamps[target].get());
                 if (targetChamp) {
-                    if (verbose) std::cout << "Attaque " << targetChamp->getNom() << std::endl;
+                    if (verbose) std::cout << "[IA]  -> Attaque " << targetChamp->getNom() << std::endl;
                     player.attaquer(opponent, targetChamp);
                 }
             }
         }
     }
-    
-    logDecision("IA termine son tour");
+
+    if (verbose) std::cout << "[IA] Fin du tour" << std::endl;
 }
 
 int HeuristicAI::decideCardPlay(Game& game, Player& player) {

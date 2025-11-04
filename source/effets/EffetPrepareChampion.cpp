@@ -1,4 +1,6 @@
 #include "../../include/effets/EffetPrepareChampion.hpp"
+#include "../../include/ai/HeuristicAI.hpp"
+#include "../../include/ai/GameEvaluator.hpp"
 #include <iostream>
 #include <algorithm>
 #include "../../include/Champion.hpp"
@@ -8,21 +10,13 @@ EffetPrepareChampion::EffetPrepareChampion() : Effet("Préparer un champion") {}
 
 void EffetPrepareChampion::activerEffet(Player& proprietaire, Game& game) {
     if(proprietaire.getChampionsEnJeu().empty()) {
-        std::cout << "Aucun champion en jeu à préparer.\n";
-        return;
-    }
-    bool aActiver = false;
-    for(const auto& champPtr : proprietaire.getChampionsEnJeu()) {
-        auto champ = dynamic_cast<Champion*>(champPtr.get());
-        if(champ && champ->getEstActiver()) {
-            aActiver = true;
-            break;
+        if (!game.isAIPlayer(proprietaire.getId())) {
+            std::cout << "Aucun champion en jeu à préparer.\n";
         }
-    }
-    if(!aActiver) {
-        std::cout << "Tous les champions sont déjà préparés.\n";
         return;
     }
+    
+    // Trouver les champions activés
     std::vector<int> activerIndices;
     for(size_t i = 0; i < proprietaire.getChampionsEnJeu().size(); ++i) {
         auto champ = dynamic_cast<Champion*>(proprietaire.getChampionsEnJeu()[i].get());
@@ -30,22 +24,54 @@ void EffetPrepareChampion::activerEffet(Player& proprietaire, Game& game) {
             activerIndices.push_back(i);
         }
     }
-    std::cout << "Champions qui peuvent etre preparés :\n";
-    for(const auto& idx : activerIndices) {
-        std::cout << idx + 1 << ". " << proprietaire.getChampionsEnJeu()[idx]->getNom() << "\n";
+    
+    if(activerIndices.empty()) {
+        if (!game.isAIPlayer(proprietaire.getId())) {
+            std::cout << "Tous les champions sont déjà préparés.\n";
+        }
+        return;
     }
-    std::cout << "Sélectionnez le numéro du champion à préparer : ";
-    int index;
-    std::cin >> index;
-    while(std::find(activerIndices.begin(), activerIndices.end(), index - 1) == activerIndices.end()) {
-        std::cout << "Index invalide, choisissez un champion activé.\n";
-        std::cout << "Choisissez :\n";
+    
+    int selectedIndex = -1;
+    
+    // Vérifier si c'est l'IA qui joue
+    if (game.isAIPlayer(proprietaire.getId())) {
+        // L'IA choisit le champion avec le plus faible score
+        // (on veut garder les meilleurs champions activés)
+        float lowestScore = 999999.0f;
+        for(const auto& idx : activerIndices) {
+            const Carte* carte = proprietaire.getChampionsEnJeu()[idx].get();
+            float score = GameEvaluator::evaluateCardValue(carte);
+            if (score < lowestScore) {
+                lowestScore = score;
+                selectedIndex = idx;
+            }
+        }
+    } else {
+        // Joueur humain : demander via console
+        std::cout << "Champions qui peuvent etre preparés :\n";
+        for(const auto& idx : activerIndices) {
+            std::cout << idx + 1 << ". " << proprietaire.getChampionsEnJeu()[idx]->getNom() << "\n";
+        }
+        std::cout << "Sélectionnez le numéro du champion à préparer : ";
+        int index;
         std::cin >> index;
+        while(std::find(activerIndices.begin(), activerIndices.end(), index - 1) == activerIndices.end()) {
+            std::cout << "Index invalide, choisissez un champion activé.\n";
+            std::cout << "Choisissez :\n";
+            std::cin >> index;
+        }
+        selectedIndex = index - 1;
     }
-    auto champ = dynamic_cast<Champion*>(proprietaire.getChampionsEnJeu()[index - 1].get());
-    if(champ) {
-        champ->setEstActiver(false);
-        std::cout << "Champion préparé.\n";
+    
+    if (selectedIndex >= 0 && selectedIndex < (int)proprietaire.getChampionsEnJeu().size()) {
+        auto champ = dynamic_cast<Champion*>(proprietaire.getChampionsEnJeu()[selectedIndex].get());
+        if(champ) {
+            champ->setEstActiver(false);
+            if (!game.isAIPlayer(proprietaire.getId())) {
+                std::cout << "Champion préparé.\n";
+            }
+        }
     }
 }
 

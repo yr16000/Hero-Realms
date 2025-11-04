@@ -59,6 +59,24 @@ public:
     void setVerbose(bool v) { verbose = v; }
     int getPlayerId() const { return playerId; }
 
+    /**
+     * Choisit le meilleur effet parmi un choix.
+     * @param effets Liste des effets possibles
+     * @param player Le joueur
+     * @param game Le jeu
+     * @return Index de l'effet choisi
+     */
+    int chooseFromEffects(const std::vector<std::unique_ptr<Effet>>& effets, Player& player, Game& game);
+
+    /**
+     * Décide si on doit activer un effet optionnel.
+     * @param effet L'effet optionnel
+     * @param player Le joueur
+     * @param game Le jeu
+     * @return true si on active
+     */
+    bool shouldActivateOptionalEffect(const Effet* effet, Player& player, Game& game);
+
 private:
     /**
      * Évalue toutes les cartes de la main et retourne l'ordre optimal de jeu.
@@ -123,23 +141,6 @@ private:
      */
     int calculateMaxPotentialCombat(Game& game, Player& player);
 
-    /**
-     * Décide si on doit activer un effet optionnel.
-     * @param effet L'effet optionnel
-     * @param player Le joueur
-     * @param game Le jeu
-     * @return true si on active
-     */
-    bool shouldActivateOptionalEffect(const Effet* effet, Player& player, Game& game);
-
-    /**
-     * Choisit le meilleur effet parmi un choix.
-     * @param effets Liste des effets possibles
-     * @param player Le joueur
-     * @param game Le jeu
-     * @return Index de l'effet choisi
-     */
-    int chooseFromEffects(const std::vector<std::unique_ptr<Effet>>& effets, Player& player, Game& game);
 
     /**
      * Log une décision si le mode verbose est activé.

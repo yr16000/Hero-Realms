@@ -1,4 +1,5 @@
 #include "../../include/effets/EffetOptionnel.hpp"
+#include "../../include/ai/HeuristicAI.hpp"
 #include <iostream>
 
 EffetOptionnel::EffetOptionnel(std::unique_ptr<Effet> e)
@@ -6,10 +7,23 @@ EffetOptionnel::EffetOptionnel(std::unique_ptr<Effet> e)
     , effet(std::move(e)) {}
 
 void EffetOptionnel::activerEffet(Player& proprietaire, Game& game) {
-    std::cout << "Voulez-vous activer l'effet : " << effet->toString() << " ? (1: Oui, 0: Non)\n";
-    int choix = 0;
-    std::cin >> choix;
-    if(choix == 1) {
+    bool activate = false;
+    
+    // Vérifier si c'est l'IA qui joue
+    if (game.isAIPlayer(proprietaire.getId())) {
+        HeuristicAI* ai = game.getAIPlayer();
+        if (ai) {
+            activate = ai->shouldActivateOptionalEffect(effet.get(), proprietaire, game);
+        }
+    } else {
+        // Joueur humain : demander via console
+        std::cout << "Voulez-vous activer l'effet : " << effet->toString() << " ? (1: Oui, 0: Non)\n";
+        int choix = 0;
+        std::cin >> choix;
+        activate = (choix == 1);
+    }
+    
+    if(activate) {
         effet->activerEffet(proprietaire, game);
     }
 }
