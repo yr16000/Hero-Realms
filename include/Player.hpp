@@ -41,6 +41,7 @@ class Player{
         void attaquer(Player& cible, Champion* carte=nullptr);
         void subirDegat(int nb);
         void jouerCarte(int index, Game& game);
+        void jouerCarteIA(int index, Game& game, bool activerChampion = true);
         void sacrifierCarte(Carte* carte, Game& game);
         bool estVivant() const;
         int getId() const;

@@ -234,6 +234,50 @@ void Player::jouerCarte(int index, Game& game){
 	}
 }
 
+void Player::jouerCarteIA(int index, Game& game, bool activerChampion){
+	if(index < 1 || static_cast<size_t>(index) > main.size()){
+		return;
+	}
+	// take card from hand
+	std::unique_ptr<Carte> c = std::move(main[index-1]);
+	// remove gap
+	main.erase(main.begin()+index-1);
+
+	if(!c){
+		return;
+	}
+
+	// Play based on primary type
+	switch(c->getType()){
+		case TypeCarte::Champion:
+			{
+				// Place champion into play
+				championsEnJeu.push_back(std::move(c));
+				// L'IA active toujours les champions immédiatement si demandé
+				if(activerChampion){
+					Champion* champ = dynamic_cast<Champion*>(championsEnJeu.back().get());
+					if(champ) champ->activer(*this, game);
+				}
+			}
+			break;
+		case TypeCarte::Action:
+			// activate then send to defausse
+			c->activer(*this, game);
+			defausse.push_back(std::move(c));
+			break;
+		case TypeCarte::Objet:
+			// For objects: activate immediately
+			{
+				c->activer(*this, game);
+				defausse.push_back(std::move(c));
+			}
+			break;
+		default:
+			defausse.push_back(std::move(c));
+			break;
+	}
+}
+
 void Player::sacrifierCarte(Carte* carte, Game& game){
 	if(!carte) return;
 	// Call card-specific sacrifice behavior

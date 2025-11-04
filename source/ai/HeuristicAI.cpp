@@ -20,13 +20,8 @@ void HeuristicAI::playTour(Game& game, Player& player) {
     int maxCombat = calculateMaxPotentialCombat(game, player);
     bool canFinishOpponent = (maxCombat >= opponent.getHp());
     
-    logDecision("Combat max potentiel: " + std::to_string(maxCombat) + 
-               ", HP adversaire: " + std::to_string(opponent.getHp()));
-    
-    if (canFinishOpponent) {
-        logDecision("!!! VICTOIRE POSSIBLE CE TOUR (Combat max: " + 
-                   std::to_string(maxCombat) + " vs HP adversaire: " + 
-                   std::to_string(opponent.getHp()) + ") !!!");
+    if (canFinishOpponent && verbose) {
+        std::cout << "[IA] Victoire possible ! (Combat max: " << maxCombat << " vs HP: " << opponent.getHp() << ")" << std::endl;
     }
     
     // Phase 1: Jouer les cartes dans l'ordre optimal
@@ -45,8 +40,12 @@ void HeuristicAI::playTour(Game& game, Player& player) {
             auto& main = player.getMain();
             if (cardToPlay >= 1 && static_cast<size_t>(cardToPlay) <= main.size()) {
                 std::string cardName = main[cardToPlay - 1]->getNom();
+                
                 logDecision("Joue carte: " + cardName);
-                player.jouerCarte(cardToPlay, game);
+                
+                // Pour les Champions : les mettre en jeu SANS les activer (Phase 1)
+                // Ils seront activés en Phase 2
+                player.jouerCarteIA(cardToPlay, game, false);
             } else {
                 continuePlayingCards = false;
             }
@@ -102,19 +101,21 @@ void HeuristicAI::playTour(Game& game, Player& player) {
     }
     
     // Phase 4: Attaquer
-    logDecision("Phase 4: Attaque (Combat disponible: " + std::to_string(player.getAtk()) + ")");
+    if (verbose && player.getAtk() > 0) {
+        std::cout << "\n[Phase 4 - Attaque] (Combat: " << player.getAtk() << ")" << std::endl;
+    }
     if (player.getAtk() > 0) {
         int target = decideAttackTarget(game, player, opponent);
         
         if (target == -1) {
-            logDecision("Attaque directe sur le joueur");
+            if (verbose) std::cout << "Attaque directe" << std::endl;
             player.attaquer(opponent, nullptr);
         } else if (target >= 0) {
             auto& advChamps = opponent.getChampionsEnJeu();
             if (static_cast<size_t>(target) < advChamps.size()) {
                 Champion* targetChamp = dynamic_cast<Champion*>(advChamps[target].get());
                 if (targetChamp) {
-                    logDecision("Attaque champion: " + targetChamp->getNom());
+                    if (verbose) std::cout << "Attaque " << targetChamp->getNom() << std::endl;
                     player.attaquer(opponent, targetChamp);
                 }
             }
@@ -163,9 +164,6 @@ std::vector<int> HeuristicAI::evaluatePlayOrder(Game& game, Player& player) {
     for (const auto& eval : evaluations) {
         if (eval.score > 0.0f) {
             playOrder.push_back(eval.actionIndex);
-            if (verbose) {
-                logDecision("  Ordre de jeu: " + eval.description);
-            }
         }
     }
     
@@ -277,8 +275,6 @@ int HeuristicAI::decideCardBuy(Game& game, Player& player) {
     
     auto purchaseOptions = evaluatePurchaseOptions(game, player);
     
-    logDecision("decideCardBuy: " + std::to_string(purchaseOptions.size()) + " options trouvées");
-    
     if (purchaseOptions.empty()) {
         logDecision("decideCardBuy: Aucune option d'achat");
         return -2; // Pas d'options d'achat
@@ -294,10 +290,6 @@ int HeuristicAI::decideCardBuy(Game& game, Player& player) {
         return -2; // Attendre un meilleur achat
     }
     
-    if (verbose) {
-        logDecision("Meilleur achat: " + best.description);
-    }
-    
     return best.actionIndex;
 }
 
@@ -311,48 +303,29 @@ std::vector<HeuristicAI::ActionEvaluation> HeuristicAI::evaluatePurchaseOptions(
     // Évaluer chaque carte du marché avec GameEvaluator
     const auto& marche = game.getMarche();
     
-    logDecision("Marché contient " + std::to_string(marche.size()) + " cartes:");
-    
     for (size_t i = 0; i < marche.size(); ++i) {
         try {
             const Carte* carte = marche[i].get();
             
-            logDecision("  Index " + std::to_string(i) + ": " + 
-                       (carte ? carte->getNom() : "nullptr") + 
-                       " (cout: " + (carte ? std::to_string(carte->getCout()) : "?") + ")");
-            
-            if (!carte) {
-                logDecision("    -> Carte null, skip");
-                continue;
+            if (!carte || carte->getCout() > gold) {
+                continue; // Carte null ou trop chère
             }
-            
-            if (carte->getCout() > gold) {
-                logDecision("    -> Trop cher (or=" + std::to_string(gold) + ")");
-                continue; // Trop cher
-            }
-            
-            logDecision("    -> Evaluation en cours...");
             
             // Utiliser evaluateCardInContext de GameEvaluator
             float score = GameEvaluator::evaluateCardInContext(carte, player, game);
-            
-            logDecision("    -> Score de base: " + std::to_string(score));
             
             // Bonus si on manque de champions
             if (carte->getType() == TypeCarte::Champion) {
                 float championPriority = GameEvaluator::evaluateChampionPriority(player, opponent);
                 score += championPriority;
-                logDecision("    -> Bonus champion: " + std::to_string(championPriority));
             }
             
             std::string desc = carte->getNom() + " (cout: " + std::to_string(carte->getCout()) + 
                               ", score: " + std::to_string(score) + ", index: " + std::to_string(i) + ")";
-            logDecision("    -> Ajouté aux options: " + desc);
             options.emplace_back(static_cast<int>(i), score, desc);
-        } catch (const std::exception& e) {
-            logDecision("    -> EXCEPTION: " + std::string(e.what()));
         } catch (...) {
-            logDecision("    -> EXCEPTION INCONNUE");
+            // Ignore les erreurs d'évaluation
+            continue;
         }
     }
     
@@ -364,9 +337,6 @@ std::vector<HeuristicAI::ActionEvaluation> HeuristicAI::evaluatePurchaseOptions(
         
         // Évaluer la gemme selon la qualité actuelle du deck
         float deckQuality = GameEvaluator::evaluateDeckQuality(player);
-        
-        logDecision("  Qualité du deck: " + std::to_string(deckQuality));
-        
         float score = 15.0f;
         
         // Si le deck est faible, gemme est moins importante
@@ -374,20 +344,14 @@ std::vector<HeuristicAI::ActionEvaluation> HeuristicAI::evaluatePurchaseOptions(
             score -= 10.0f;
         }
         
-        logDecision("  Score gemme: " + std::to_string(score));
-        
         options.emplace_back(-1, score, "Gemme de Feu (score: " + std::to_string(score) + ")");
     }
-    
-    logDecision("Tri des options...");
     
     // Trier par score décroissant
     std::sort(options.begin(), options.end(),
               [](const ActionEvaluation& a, const ActionEvaluation& b) {
                   return a.score > b.score;
               });
-    
-    logDecision("Options triées, retour de " + std::to_string(options.size()) + " options");
     
     return options;
 }
@@ -580,6 +544,7 @@ Carte* HeuristicAI::decideCardToSacrifice(Game& game, Player& player) {
 void HeuristicAI::logDecision(const std::string& decision) {
     if (verbose) {
         std::cout << "[IA] " << decision << std::endl;
+        std::cout.flush();  // Force le flush pour déboggage
     }
 }
 
