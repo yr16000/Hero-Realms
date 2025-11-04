@@ -87,7 +87,7 @@ int main() {
             
             // Terminer le tour de l'IA
             joueurActif = 1 - joueurActif;
-            joueurs[joueurActif].resetPourNouveauTour();
+            joueurs[joueurActif].resetPourNouveauTour();  // Reset au DEBUT du prochain tour
             continue;
         }
 
@@ -122,8 +122,9 @@ int main() {
                 break;
 
             case 6: { // ➡️ Terminer le tour → bascule immédiate + redraw pour le suivant
+                p.resetPourNouveauTour();  // Reset à la FIN du tour actuel
                 joueurActif = 1 - joueurActif;
-                joueurs[joueurActif].resetPourNouveauTour();
+                joueurs[joueurActif].resetPourNouveauTour();  // Reset au DEBUT du prochain tour
                 continue; // repart du début → clear + header du nouveau joueur
             }
 
