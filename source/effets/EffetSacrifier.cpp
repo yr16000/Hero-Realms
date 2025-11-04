@@ -29,7 +29,7 @@ void EffetSacrifier::activerEffet(Player& proprietaire, Game& game){
             fromMain=false;
         }
         (choixSource==1?proprietaire.afficherMainDetaillee():proprietaire.afficherDefausse());
-        std::cout << "Entrez le numéro de la carte à sacrifier";
+        std::cout << "Entrez le numéro de la carte à sacrifier: ";
         int index;
         std::cin >> index;
         if(fromMain){
