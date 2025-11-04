@@ -17,9 +17,9 @@ int main() {
     
     // Demander si on veut jouer contre l'IA
     std::cout << "Hero Realms\n";
-    std::cout << "1. Joueur vs Joueur\n";
-    std::cout << "2. Joueur vs IA Heuristique\n";
-    std::cout << "3. Joueur vs IA MCTS\n";
+    std::cout << "1. ⚔️ Joueur vs Joueur\n";
+    std::cout << "2. 🧠 Joueur vs IA Heuristique\n";
+    std::cout << "3. 🎲 Joueur vs IA MCTS\n";
     int modeJeu = ui::Console::lireChoix("> Mode de jeu", 1, 3);
     
     std::unique_ptr<HeuristicAI> heuristicAI = nullptr;
@@ -58,6 +58,11 @@ int main() {
     #else
         system("clear");
     #endif
+
+        if (joueurActif == 0)
+            std::cout << "\033[1;34m➡️  C’est au joueur 1 de jouer !\033[0m\n\n";
+        else
+            std::cout << "\033[1;31m➡️  C’est au joueur 2 de jouer !\033[0m\n\n";
 
         Player& p   = joueurs[joueurActif];
         Player& adv = joueurs[1 - joueurActif];

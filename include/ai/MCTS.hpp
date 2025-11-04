@@ -8,7 +8,7 @@
 #include <random>
 
 // Forward declarations
-class MCTSNode;
+
 
 // Noeud de l'arbre MCTS
 struct MCTSNode {
