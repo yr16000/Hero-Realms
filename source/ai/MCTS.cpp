@@ -139,10 +139,21 @@ float MCTS::simulation(Game& game, Player& player) {
     auto evaluation = GameEvaluator::evaluateGameState(game, player, opponent);
     float baseScore = evaluation.totalScore;
     
-    // Bonus si victoire proche
+    // Bonus important si victoire proche
     if (opponent.getHp() <= player.getAtk()) {
-        baseScore += 100.0f;
+        baseScore += 200.0f;
     }
+    
+    // Pénalité pour les cartes non jouées en main
+    // (encourage à jouer toutes les cartes)
+    int cardsInHand = player.getMain().size();
+    if (cardsInHand > 0) {
+        baseScore -= cardsInHand * 7.0f;  // -7 points par carte non jouée
+    }
+    
+    // Bonus pour les ressources disponibles (or, combat)
+    baseScore += player.getGold() * 2.0f;   // L'or est précieux
+    baseScore += player.getAtk() * 3.0f;    // Le combat aussi
     
     return baseScore;
 }
@@ -202,12 +213,23 @@ void MCTS::playCards(Game& game, Player& player) {
     while (!player.getMain().empty()) {
         auto& main = player.getMain();
         
-        // Créer la liste des actions valides (indices des cartes + option "stop")
+        // Si une seule carte, la jouer directement
+        if (main.size() == 1) {
+            if (verbose) {
+                std::cout << "\nDerniere carte en main:" << std::endl;
+                std::cout << "Carte #" << cardNumber << ": "<<std::endl;
+                main[0]->afficherCarte();
+            }
+            player.jouerCarteIA(1, game, false);
+            cardNumber++;
+            break;
+        }
+        
+        // Créer la liste des actions valides (indices des cartes, SANS option "stop")
         std::vector<int> validActions;
         for (size_t i = 0; i < main.size(); ++i) {
             validActions.push_back(static_cast<int>(i + 1)); // 1-indexed
         }
-        validActions.push_back(0); // 0 = arrêter de jouer
         
         if (verbose && !main.empty()) {
             std::cout << "\nCartes en main (" << main.size() << "):" << std::endl;
@@ -219,11 +241,6 @@ void MCTS::playCards(Game& game, Player& player) {
         
         // Utiliser MCTS pour choisir la meilleure carte
         int cardToPlay = searchBestAction(game, player, validActions);
-        
-        if (cardToPlay <= 0) {
-            if (verbose) std::cout << " STOP" << std::endl;
-            break; // Arrêter de jouer
-        }
         
         if (cardToPlay >= 1 && cardToPlay <= static_cast<int>(main.size())) {
             if (verbose) {
